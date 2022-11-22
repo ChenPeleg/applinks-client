@@ -1,0 +1,19 @@
+{
+  "name": "applink-client",
+  "engines": {
+    "node": "18"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "node ./testing/index.js",
+    "build": "node ./bundler/bundler.js",
+    "lint": "eslint --fix js/*.js",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "eslint": "^8.28.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.7.1"
+  }
+}
