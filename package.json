@@ -5,7 +5,7 @@
   },
   "type": "module",
   "scripts": {
-    "test": "node ./testing/index.js",
+    "test": "node ./utils/testing/index.js",
     "build": "node ./bundler/bundler.js",
     "lint": "eslint --fix js/*.js",
     "format": "prettier --write ."
