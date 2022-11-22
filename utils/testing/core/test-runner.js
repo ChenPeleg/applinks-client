@@ -2,10 +2,9 @@ import { TestFrameWorkConsole } from './testing.frame.console.js';
 import TestingFramework from './testing.frame.core.js';
 import * as fs from 'fs';
 import * as path from 'path';
-import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { fileURLToPath } from 'url';
 import { TestEventTypes } from './testing.frame.test-event.js';
-import { waitForDebugger } from 'inspector';
 import { TestFrameWorkUtils } from './testing.frame.utils.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -13,16 +12,15 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export class TestRunner {
     testingFramework;
+
     constructor() {
         this.testingFramework = new TestingFramework();
         this.print = new TestFrameWorkConsole();
         this.log = TestFrameWorkConsole;
         this.testingFramework.init();
     }
-    static async searchTestFiles(
-        fileNameMatcher = ['.test.js', '.spec.js'],
-        ignoreLibs = ['.git', 'node_modules']
-    ) {
+
+    static async searchTestFiles(fileNameMatcher = ['.test.js', '.spec.js'], ignoreLibs = ['.git', 'node_modules']) {
         const BaseDirName = path.resolve('./');
         let breaks = 0;
 
@@ -41,7 +39,7 @@ export class TestRunner {
                     recursiveGetAllTestFiles(fullFileName, allFiles);
                 } else if (elm.match(/.*\.(test.m?js|spec.m?js)/gi)) {
                     allFiles.push(fullFileName);
-                    return;
+
                 }
             });
 
@@ -49,27 +47,24 @@ export class TestRunner {
         };
         return recursiveGetAllTestFiles(BaseDirName, []);
     }
-    async runTests({ ignore, testfiles, filter }) {
+
+    async runTests({ignore, testfiles, filter}) {
         console.log('Running tests');
         this.print.circleAnimation('ON', 'Searching For Files');
         const testFiles = await TestRunner.searchTestFiles();
         await TestFrameWorkUtils.wait(500);
-        this.print.circleAnimation(
-            'OFF',
-            `Found ${testFiles.length} test files`
-        );
+        this.print.circleAnimation('OFF', `Found ${testFiles.length} test files`);
         console.log(' ');
 
         for (const fileName of testFiles) {
-            await import(
-                path.relative(__dirname, fileName).replace(/\\/g, '/')
-            );
+            await import(path.relative(__dirname, fileName).replace(/\\/g, '/'));
         }
         const descriptions = [];
         const passed = [];
         const failed = [];
         const skipped = [];
-        this.testingFramework.globalData.tests.forEach((test) => {
+        const allTests = this.testingFramework.globalData.tests;
+        allTests.forEach((test) => {
             const indentation = ' '.repeat(descriptions.length * 4);
 
             switch (test.type) {
@@ -100,51 +95,42 @@ export class TestRunner {
             }
             passed.push(test.description);
         });
+
+
         if (skipped.length) {
             console.log(
                 '\n',
                 TestFrameWorkConsole.paint(
-                    `${skipped.length} Tests ${TestFrameWorkConsole.paint(
-                        ' SKIPPED ',
-                        {
-                            color: 'white',
-                            background: 'BGyellow',
-                        }
-                    )}`
+                    `${skipped.length} Tests ${TestFrameWorkConsole.paint(' SKIPPED ', {
+                        color: 'white',
+                        background: 'BGyellow',
+                    })}`
                 )
             );
         }
         if (failed.length) {
             console.log(
                 TestFrameWorkConsole.paint(
-                    `${failed.length} Tests ${TestFrameWorkConsole.paint(
-                        ' FAILED ',
-                        {
-                            color: 'white',
-                            background: 'BGred',
-                        }
-                    )}`
+                    `${failed.length} Tests ${TestFrameWorkConsole.paint(' FAILED ', {
+                        color: 'white',
+                        background: 'BGred',
+                    })}`
                 )
             );
         }
         console.log(
             '\n',
             TestFrameWorkConsole.paint(
-                `${passed.length} Tests ${TestFrameWorkConsole.paint(
-                    ' PASSED ',
-                    {
-                        color: 'white',
-                        background: 'BGgreen',
-                    }
-                )}`,
-                { background: 'BGblack' }
+                `${passed.length} Tests ${TestFrameWorkConsole.paint(' PASSED ', {
+                    color: 'white',
+                    background: 'BGgreen',
+                })}`,
+                {background: 'BGblack'}
             )
         );
         if (failed.length) {
             //  process.exit(1);
-            throw new Error(
-                'npm ERR! Test failed.  See above for more details.'
-            );
+            throw new Error('npm ERR! Test failed.  See above for more details.');
         }
     }
 }

@@ -1,11 +1,11 @@
 import { TestFrameWorkGlobals } from './testing.frame.globals.js';
-import TestEvent from './testing.frame.test-event.js';
 
 export class GlobalData {
-    constructor() {}
     /**@type {TestEvent[]} */
     tests = [];
     configData = {};
+
+    constructor() {}
 }
 
 class TestingFramework {
@@ -13,7 +13,9 @@ class TestingFramework {
         this.globalData = new GlobalData();
         this.testFrameWorkGlobals = new TestFrameWorkGlobals(this.globalData);
     }
+
     init() {
+        // eslint-disable-next-line no-undef
         globalThis.expect = this.testFrameWorkGlobals.expect;
         globalThis.it = this.testFrameWorkGlobals.it;
         globalThis.describe = this.testFrameWorkGlobals.describe;
