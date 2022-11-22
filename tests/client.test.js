@@ -9,4 +9,8 @@ describe('client js class', () => {
         const cls = new APPLinksClient('abc');
         expect(!!cls).toBe(true);
     });
+    it('should fail ', () => {
+        const cls = new APPLinksClient('abc');
+        expect(7).toBe(9);
+    });
 });

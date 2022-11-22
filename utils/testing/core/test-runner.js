@@ -39,7 +39,6 @@ export class TestRunner {
                     recursiveGetAllTestFiles(fullFileName, allFiles);
                 } else if (elm.match(/.*\.(test.m?js|spec.m?js)/gi)) {
                     allFiles.push(fullFileName);
-
                 }
             });
 
@@ -48,7 +47,7 @@ export class TestRunner {
         return recursiveGetAllTestFiles(BaseDirName, []);
     }
 
-    async runTests({ignore, testfiles, filter}) {
+    async runTests({ ignore, testfiles, filter }) {
         console.log('Running tests');
         this.print.circleAnimation('ON', 'Searching For Files');
         const testFiles = await TestRunner.searchTestFiles();
@@ -64,7 +63,8 @@ export class TestRunner {
         const failed = [];
         const skipped = [];
         const allTests = this.testingFramework.globalData.tests;
-        allTests.forEach((test) => {
+
+        for (const test of allTests) {
             const indentation = ' '.repeat(descriptions.length * 4);
 
             switch (test.type) {
@@ -75,28 +75,26 @@ export class TestRunner {
                     }
 
                     descriptions.push(test.description);
-                    return;
+                    continue;
                 case TestEventTypes.BLOCKEND:
                     descriptions.pop();
-                    return;
+                    continue;
                 case TestEventTypes.TEST:
                     if (filter && !test.description.includes(filter)) {
                         skipped.push(test.description);
-                        return;
+                        continue;
                     }
                     console.log(indentation + test.description);
             }
             try {
-                test.test();
+                await test.test();
             } catch (e) {
                 console.log(indentation + e);
                 failed.push(test.description + ' ' + e);
-                return;
+                continue;
             }
             passed.push(test.description);
-        });
-
-
+        }
         if (skipped.length) {
             console.log(
                 '\n',
@@ -125,7 +123,7 @@ export class TestRunner {
                     color: 'white',
                     background: 'BGgreen',
                 })}`,
-                {background: 'BGblack'}
+                { background: 'BGblack' }
             )
         );
         if (failed.length) {
