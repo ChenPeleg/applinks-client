@@ -9,8 +9,8 @@ describe('client js class', () => {
         const cls = new APPLinksClient('abc');
         expect(!!cls).toBe(true);
     });
-    it('should fail ', () => {
-        const cls = new APPLinksClient('abc');
-        expect(7).toBe(9);
+    it('async test ', async () => {
+        const result = await fetch('http://google.co.il');
+        console.log(result);
     });
 });
