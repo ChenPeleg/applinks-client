@@ -1,22 +1,15 @@
-export class APPLinksClient {
-    #appName;
-    #newLoginWindowRef = null;
+export class APPLinkUtils {
+    constructor() {}
 
-    #UserAndAppData = {};
-
-    constructor(appName) {
-        this.#appName = appName;
+    static buildLoginUrl(baseUrl) {
+        return `${baseUrl}/user_login`;
     }
 
-    get #loginUrl() {
-        return `${this.loginUrl}/user_login`;
+    static buildRecordUrl(baseUrl) {
+        return `${baseUrl}/api/records`;
     }
 
-    get #recordUrl() {
-        return `${this.loginUrl}/api/records`;
-    }
-
-    async saveData(url = '', data = {}) {
+    static async SaveData(url = '', data = {}) {
         // Default options are marked with *
         const response = await fetch(url, {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -31,6 +24,42 @@ export class APPLinksClient {
             body: JSON.stringify(data), // body data type must match "Content-Type" header
         });
         return response.json(); // parses JSON response into native JavaScript objects
+    }
+
+    static async LoadData(url = '', data = {}) {
+        // Default options are marked with *
+        const response = await fetch(url, {
+            method: 'GET', // *GET, POST, PUT, DELETE, etc.
+            mode: 'no-cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify(data), // body data type must match "Content-Type" header
+        });
+        return response.json(); // parses JSON response into native JavaScript objects
+    }
+}
+
+export class APPLinksClient {
+    #appName;
+    #newLoginWindowRef = null;
+    #util = APPLinkUtils;
+    #UserAndAppData = {};
+
+    constructor(appName) {
+        this.#appName = appName;
+    }
+
+    get #loginUrl() {
+        return `${this.loginUrl}/user_login`;
+    }
+
+    get #recordUrl() {
+        return `${this.loginUrl}/api/records`;
     }
 
     async loadData(url = '', data = {}) {
@@ -78,7 +107,7 @@ export class APPLinksClient {
     }
 
     checkLoadStatus() {
-        this.loadData(this.#recordUrl, {}).then((r) => {
+        this.#util.LoadData(this.#recordUrl, {}).then((r) => {
             console.log('results', r);
         });
     }
