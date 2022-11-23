@@ -1,9 +1,9 @@
 /**
  * @typedef UserData
- * @property { token } username
- * @property  { token } firstName
- * @property  { token } lastName
- * @property  { token } token
+ * @property { string } username
+ * @property  { string } firstName
+ * @property  { string } lastName
+ * @property  { string } token
  */
 
 export class APPLinkUtils {
@@ -17,7 +17,7 @@ export class APPLinkUtils {
         return `${baseUrl}/api/records`;
     }
 
-    static async SaveData(url = '', data = {}) {
+    static async PostData(url = '', data = {}) {
         // Default options are marked with *
         const response = await fetch(url, {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
@@ -34,21 +34,21 @@ export class APPLinkUtils {
         return response.json(); // parses JSON response into native JavaScript objects
     }
 
-    static async LoadData(url = '', data = {}) {
+    static async GetData(url = '', data = {}) {
         // Default options are marked with *
         const response = await fetch(url, {
-            method: 'GET', // *GET, POST, PUT, DELETE, etc.
-            mode: 'no-cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            method: 'GET',
+            mode: 'no-cors',
+            cache: 'no-cache',
 
             headers: {
+                Accept: '*/*',
                 'Content-Type': 'application/json',
+                'Accept-Encoding': '',
             },
-            redirect: 'follow', // manual, *follow, error
-            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
         });
-        return response.json(); // parses JSON response into native JavaScript objects
+
+        return response;
     }
 }
 
@@ -56,7 +56,10 @@ export class APPLinksClient {
     #appName;
     #newLoginWindowRef = null;
     #util = APPLinkUtils;
-    #UserAndAppData = {};
+    /** @type {UserData} */
+    #UserData;
+
+    #recordData;
     baseUrl = 'http://127.0.0.1:8000';
 
     constructor(appName) {
@@ -71,21 +74,16 @@ export class APPLinksClient {
         return `${this.baseUrl}/api/records`;
     }
 
-    async loadData(url = '', data = {}) {
-        // Default options are marked with *
-        const response = await fetch(url, {
-            method: 'GET', // *GET, POST, PUT, DELETE, etc.
-            mode: 'no-cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            redirect: 'follow', // manual, *follow, error
-            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
-        });
-        return response.json(); // parses JSON response into native JavaScript objects
+    async loadData() {
+        const requestData = {
+            token: this.#UserData?.token || 'asdf',
+            appName: this.#appName,
+        }; //${this.#appName}
+        const url = `${this.#recordUrl}/api/records2/`;
+        //api/records2/
+        const response = await this.#util.GetData('http://127.0.0.1:8000/api/records2/', requestData);
+        this.#recordData = response;
+        return response;
     }
 
     /** @type {()=> Promise<UserData>}*/
@@ -103,7 +101,7 @@ export class APPLinksClient {
                 'message',
                 (msg) => {
                     const data = msg.data;
-                    this.#UserAndAppData.token = data.token;
+                    this.#UserData = data;
                     if (this.#newLoginWindowRef) {
                         this.#newLoginWindowRef.close();
                         this.#newLoginWindowRef = null;
@@ -120,10 +118,10 @@ export class APPLinksClient {
         });
     }
 
-    GetSavedRecords() {}
+    loadSavedRecords() {}
 
     checkLoadStatus() {
-        this.#util.LoadData(this.#recordUrl, {}).then((r) => {
+        this.#util.GetData(this.#recordUrl, {}).then((r) => {
             console.log('results', r);
         });
     }

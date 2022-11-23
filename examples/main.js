@@ -8,14 +8,13 @@ const loginToServer = async () => {
     userState.innerHTML = `Hello, ${result.firstName} ${result.lastName} `;
 
     const buttons = document.body.querySelectorAll('button.not-active');
-    buttons.forEach(btn => {
+    buttons.forEach((btn) => {
         btn.classList.remove('not-active');
-    })
+    });
 };
 const loadData = async () => {
-    const result = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
-    const userState = document.body.querySelector('div.user-state');
-    userState.innerHTML = `Hello, ${result.firstName} ${result.lastName} `;
+    const result = /** @type { any }*/ await appLinkClient.loadData();
+    console.log(result);
 };
 const saveData = async () => {
     const result = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
