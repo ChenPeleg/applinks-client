@@ -12,6 +12,10 @@
             font-size: 30px;
         }
 
+        .big-margins {
+            margin: 30px;
+        }
+
         button {
             padding: 10px;
             border: none;
@@ -19,6 +23,12 @@
             box-shadow: beige;
             background-color: purple;
             color: white;
+            font-size: 50px;
+            margin: 10px;
+        }
+
+        button.not-active {
+            background-color: darkgrey;
         }
     </style>
 
@@ -28,9 +38,14 @@
 
 <div style="height: 400px; max-width: 400px; margin: auto auto; padding: 3em;">
     <h1> IFRAME Test</h1>
-    <button onclick=" loginToServer()" style="font-size: 50px">Login through site</button>
-    <div class="user-state"></div>
-    <div class="record-state"></div>
+    <button onclick=" loginToServer()">Login through site</button>
+    <div class="user-state big-margins"></div>
+    <div class="record-action">
+        <button class="not-active" id="load-button" onclick=" saveData()">get data</button>
+        <button class="not-active" id="save-button" onclick=" loadData()">save data</button>
+
+    </div>
+    <div class="record-state big-margins"></div>
 
 
 </div>
