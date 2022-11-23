@@ -1,3 +1,11 @@
+/**
+ * @typedef UserData
+ * @property { token } username
+ * @property  { token } firstName
+ * @property  { token } lastName
+ * @property  { token } token
+ */
+
 export class APPLinkUtils {
     constructor() {}
 
@@ -49,17 +57,18 @@ export class APPLinksClient {
     #newLoginWindowRef = null;
     #util = APPLinkUtils;
     #UserAndAppData = {};
+    baseUrl = 'http://127.0.0.1:8000';
 
     constructor(appName) {
         this.#appName = appName;
     }
 
     get #loginUrl() {
-        return `${this.loginUrl}/user_login`;
+        return `${this.baseUrl}/user_login`;
     }
 
     get #recordUrl() {
-        return `${this.loginUrl}/api/records`;
+        return `${this.baseUrl}/api/records`;
     }
 
     async loadData(url = '', data = {}) {
@@ -79,15 +88,8 @@ export class APPLinksClient {
         return response.json(); // parses JSON response into native JavaScript objects
     }
 
-    #receivedLoginMessage(data) {
-        this.#UserAndAppData.token = data.token;
-        if (this.#newLoginWindowRef) {
-            this.#newLoginWindowRef.close();
-            this.#newLoginWindowRef = null;
-        }
-    }
-
-    openLoginIframe() {
+    /** @type {()=> Promise<UserData>}*/
+    async LoginThroughAppLinks() {
         const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh; height :600px; display: flex; flex-direction: row;justify-content: center">
             <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
                 this.#loginUrl
@@ -96,15 +98,29 @@ export class APPLinksClient {
         this.#newLoginWindowRef = newLoginWindow;
         const doc = newLoginWindow.document;
         doc.open();
-        newLoginWindow.addEventListener(
-            'message',
-            (msg) => {
-                this.#receivedLoginMessage(msg.data);
-            },
-            false
-        );
-        doc.write(html);
+        return await new Promise((resolve, reject) => {
+            newLoginWindow.addEventListener(
+                'message',
+                (msg) => {
+                    const data = msg.data;
+                    this.#UserAndAppData.token = data.token;
+                    if (this.#newLoginWindowRef) {
+                        this.#newLoginWindowRef.close();
+                        this.#newLoginWindowRef = null;
+                    }
+
+                    if (!data?.token) {
+                        reject(msg);
+                    }
+                    resolve(data);
+                },
+                false
+            );
+            doc.write(html);
+        });
     }
+
+    GetSavedRecords() {}
 
     checkLoadStatus() {
         this.#util.LoadData(this.#recordUrl, {}).then((r) => {
@@ -112,5 +128,3 @@ export class APPLinksClient {
         });
     }
 }
-
-const appLinksClient = new APPLinksClient('myapp');
