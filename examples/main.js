@@ -9,8 +9,6 @@ const loginToServer = async () => {
 
     const buttons = document.body.querySelectorAll('button.not-active');
     buttons.forEach(btn => {
-
-
         btn.classList.remove('not-active');
     })
 };
