@@ -34,22 +34,13 @@ export class APPLinkUtils {
     }
 
     static async GetData(url = '', data = {}) {
-        return fetch(url).then((response) => response.json());
-
-        // Default options are marked with *
-        // const response = await fetch(url, {
-        //     method: 'GET',
-        //     mode: 'no-cors',
-        //     cache: 'no-cache',
-        //
-        //     headers: {
-        //         Accept: '*/*',
-        //         'Content-Type': 'application/json',
-        //         // 'Accept-Encoding': '',
-        //     },
-        // });
-
-        //  return response;
+        try {
+            const response = await fetch(url);
+            const asJson = await response.json();
+            return asJson;
+        } catch (err) {
+            throw new Error('cannot get data' + err.toString());
+        }
     }
 }
 
@@ -79,10 +70,10 @@ export class APPLinksClient {
         const requestData = {
             token: this.#UserData?.token || 'asdf',
             appName: this.#appName,
-        }; //${this.#appName}
-        const url = `${this.#recordUrl}/api/records2/`;
-        //api/records2/
-        const response = await this.#util.GetData('https://jsonplaceholder.typicode.com/todos/1', requestData);
+        };
+        const url = `${this.#recordUrl}`;
+
+        const response = await this.#util.GetData(url, requestData);
         this.#recordData = response;
         return response;
     }
