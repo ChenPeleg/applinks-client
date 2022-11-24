@@ -1,3 +1,5 @@
+//@ts-check
+
 /**
  * @typedef UserData
  * @property { string } username
@@ -45,12 +47,15 @@ export class APPLinkUtils {
 }
 
 export class APPLinksClient {
+    static Messages = {
+        UserWasSet: 'UserWasSet',
+        UserWasNotSet: 'UserWasNotSet',
+    };
     #appName;
     #newLoginWindowRef = null;
     #util = APPLinkUtils;
     /** @type {UserData} */
     #UserData;
-
     #recordData;
     baseUrl = 'http://127.0.0.1:8000';
 
@@ -64,6 +69,15 @@ export class APPLinksClient {
 
     get #recordUrl() {
         return `${this.baseUrl}/api/records`;
+    }
+
+    /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
+    setUserData(userSata) {
+        if (userSata.firstName && userSata.lastName && userSata.username && userSata.token) {
+            this.#UserData = userSata;
+            return APPLinksClient.Messages.UserWasSet;
+        }
+        return APPLinksClient.Messages.UserWasNotSet;
     }
 
     async loadData() {

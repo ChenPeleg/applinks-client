@@ -1,7 +1,10 @@
 {
     "compilerOptions": {
         "allowJs": true,
-        "typeRoots": ["./typings"],
+        "target": "ESNext",
+        "typeRoots": [
+            "./typings"
+        ],
         "outFile": "./justANameToMakeTSHappy.js",
         "module": "System"
     }
