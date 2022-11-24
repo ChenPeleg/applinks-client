@@ -14,7 +14,7 @@ const loginToServer = async () => {
 };
 const loadData = async () => {
     const result = /** @type { any }*/ await appLinkClient.loadData();
-    console.log(result);
+    console.log('load Data', result);
 };
 const saveData = async () => {
     const result = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();

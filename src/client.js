@@ -18,7 +18,6 @@ export class APPLinkUtils {
     }
 
     static async PostData(url = '', data = {}) {
-        // Default options are marked with *
         const response = await fetch(url, {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
@@ -35,20 +34,22 @@ export class APPLinkUtils {
     }
 
     static async GetData(url = '', data = {}) {
+        return fetch(url).then((response) => response.json());
+
         // Default options are marked with *
-        const response = await fetch(url, {
-            method: 'GET',
-            mode: 'no-cors',
-            cache: 'no-cache',
+        // const response = await fetch(url, {
+        //     method: 'GET',
+        //     mode: 'no-cors',
+        //     cache: 'no-cache',
+        //
+        //     headers: {
+        //         Accept: '*/*',
+        //         'Content-Type': 'application/json',
+        //         // 'Accept-Encoding': '',
+        //     },
+        // });
 
-            headers: {
-                Accept: '*/*',
-                'Content-Type': 'application/json',
-                'Accept-Encoding': '',
-            },
-        });
-
-        return response;
+        //  return response;
     }
 }
 
@@ -81,7 +82,7 @@ export class APPLinksClient {
         }; //${this.#appName}
         const url = `${this.#recordUrl}/api/records2/`;
         //api/records2/
-        const response = await this.#util.GetData('http://127.0.0.1:8000/api/records2/', requestData);
+        const response = await this.#util.GetData('https://jsonplaceholder.typicode.com/todos/1', requestData);
         this.#recordData = response;
         return response;
     }
