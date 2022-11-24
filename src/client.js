@@ -93,7 +93,7 @@ export class APPLinksClient {
             token: this.#UserData?.token || 'asdf',
             appName: this.#appName,
         };
-        const url = `${this.#recordUrl}`;
+        const url = `${this.#recordUrl}${this.#appName}/`;
 
         const response = await this.#util.GetData(url, this.#UserData?.token);
         this.#recordData = response;
