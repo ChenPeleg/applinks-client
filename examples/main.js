@@ -17,13 +17,13 @@ const loginToServer = async () => {
     updateUserUi(userData);
 };
 const loadData = async () => {
-    const result = /** @type { any }*/ await appLinkClient.loadData();
+    const result = /** @type { any }*/ await appLinkClient.loadSavedRecords();
     console.log('load Data', result);
 };
 const saveData = async () => {
-    const result = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
-    const userState = document.body.querySelector('div.user-state');
-    userState.innerHTML = `Hello, ${result.firstName} ${result.lastName} `;
+    const data = { data: 'just some data' };
+    const result = /** @type { any }*/ await appLinkClient.savedRecord(data);
+    console.log('load Data', result);
 };
 const checkLSForUSerData = () => {
     const userDAtaFromLS = localStorage.getItem('user-data');

@@ -19,25 +19,33 @@ export class APPLinkUtils {
         return `${baseUrl}/api/records`;
     }
 
-    static async PostData(url = '', data = {}) {
+    static async PostData(url = '', data = {}, token = null) {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = 'Token ' + token;
+        }
         const response = await fetch(url, {
-            method: 'POST', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            redirect: 'follow', // manual, *follow, error
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'same-origin',
+            headers: headers,
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify(data), // body data type must match "Content-Type" header
         });
         return response.json(); // parses JSON response into native JavaScript objects
     }
 
-    static async GetData(url = '', data = {}) {
+    static async GetData(url = '', token) {
         try {
-            const response = await fetch(url);
+            const headers /** @type {HeadersInit | any} */ = {};
+            if (token) {
+                headers['Authorization'] = 'Token ' + token;
+            }
+            // @ts-ignore
+            const response = await fetch(url, { headers: headers });
             const asJson = await response.json();
             return asJson;
         } catch (err) {
@@ -68,7 +76,7 @@ export class APPLinksClient {
     }
 
     get #recordUrl() {
-        return `${this.baseUrl}/api/records`;
+        return `${this.baseUrl}/api/records/`;
     }
 
     /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
@@ -80,14 +88,23 @@ export class APPLinksClient {
         return APPLinksClient.Messages.UserWasNotSet;
     }
 
-    async loadData() {
+    async loadSavedRecords() {
         const requestData = {
             token: this.#UserData?.token || 'asdf',
             appName: this.#appName,
         };
         const url = `${this.#recordUrl}`;
 
-        const response = await this.#util.GetData(url, requestData);
+        const response = await this.#util.GetData(url, this.#UserData?.token);
+        this.#recordData = response;
+        return response;
+    }
+
+    async savedRecord(dataToSave) {
+        const appName = this.#appName;
+        const url = `${this.#recordUrl}`;
+
+        const response = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         this.#recordData = response;
         return response;
     }
@@ -123,8 +140,6 @@ export class APPLinksClient {
             doc.write(html);
         });
     }
-
-    loadSavedRecords() {}
 
     checkLoadStatus() {
         this.#util.GetData(this.#recordUrl, {}).then((r) => {
