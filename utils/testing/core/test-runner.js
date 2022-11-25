@@ -91,7 +91,7 @@ export class TestRunner {
                     console.log(indentation + test.description + ' ✅  ');
                 }
             } catch (e) {
-                console.log(indentation + test.description + ' ❌  ');
+                console.log(indentation + test.description + ' ❌   ');
                 TestFrameWorkConsole.red(indentation + e);
                 failed.push(test.description + ' ' + e);
                 continue;
@@ -112,7 +112,7 @@ export class TestRunner {
         if (failed.length) {
             console.log(
                 TestFrameWorkConsole.paint(
-                    `${failed.length} Tests ${TestFrameWorkConsole.paint(' FAILED ', {
+                    ` ${failed.length} Tests ${TestFrameWorkConsole.paint(' FAILED ', {
                         color: 'white',
                         background: 'BGred',
                     })}`
@@ -131,7 +131,7 @@ export class TestRunner {
         );
         if (failed.length) {
             //  process.exit(1);
-            throw new Error('npm ERR! Test failed.  See above for more details.');
+            throw new Error('Test framework Error! Test failed.  See above for more details.');
         }
     }
 }
