@@ -8,6 +8,16 @@
  * @property  { string } token
  */
 
+/**
+ * @typedef RecordData
+ * @property { string } app_data
+ * @property { string } app_name
+ * @property { string } app_id
+ * @property  { string } message
+ * @property  { string } saved_date
+ * @property  { string } user_id
+ */
+
 export class APPLinkUtils {
     constructor() {}
 

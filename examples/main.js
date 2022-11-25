@@ -17,11 +17,13 @@ const loginToServer = async () => {
     updateUserUi(userData);
 };
 const loadData = async () => {
-    const result = /** @type { any }*/ await appLinkClient.loadSavedRecords();
-    console.log('load Data', result);
+    const result = /** @type { RecordData }*/ await appLinkClient.loadSavedRecords();
+    if (result?.app_data?.dataText) {
+        document.querySelector('#data-input').value = result.dataText;
+    }
 };
 const saveData = async () => {
-    const data = { data: 'just some data' };
+    const data = { dataText: document.querySelector('#data-input').value };
     const result = /** @type { any }*/ await appLinkClient.savedRecord(data);
     console.log('load Data', result);
 };
