@@ -84,12 +84,15 @@ export class TestRunner {
                         skipped.push(test.description);
                         continue;
                     }
-                    console.log(indentation + test.description);
             }
             try {
                 await test.test();
+                if (test.type === TestEventTypes.TEST) {
+                    console.log(indentation + test.description + ' ✅  ');
+                }
             } catch (e) {
-                console.log(indentation + e);
+                console.log(indentation + test.description + ' ❌  ');
+                TestFrameWorkConsole.red(indentation + e);
                 failed.push(test.description + ' ' + e);
                 continue;
             }

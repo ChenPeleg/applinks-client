@@ -46,35 +46,39 @@ const colors = {
 /**@typedef {{color? : keyof typeof colors.fg, background? : keyof typeof colors.bg  } | keyof typeof colors.fg} logOptions */
 
 export class TestFrameWorkConsole {
-    constructor() {}
     animationOn = false;
     animationText = '';
+
+    constructor() {}
+
     static log(...args) {
         console.log(...args);
     }
+
     static green(text) {
         TestFrameWorkConsole.print(text, { color: 'green' });
     }
+
     static red(text) {
         TestFrameWorkConsole.print(text, { color: 'red' });
     }
+
     /** @type {(text : string, options?: logOptions)=>void} */
     static print(text, options = undefined) {
         console.log(TestFrameWorkConsole.paint(text, options));
     }
+
     /** @type {(text : string, options?: logOptions)=>string} */
 
     static paint(text, argsOptions = undefined) {
-        let options =
-            typeof argsOptions === 'object'
-                ? { ...argsOptions }
-                : { color: argsOptions };
+        let options = typeof argsOptions === 'object' ? { ...argsOptions } : { color: argsOptions };
 
         const fg = options?.color ? colors.fg[options.color] : '';
         const bg = options?.background ? colors.bg[options.background] : '';
         const reset = colors.reset;
         return `${fg}${bg}${text}${reset}`;
     }
+
     static statusBar(len, pos, options = null) {
         if (pos === 0) {
             process.stdout.write('▒'.repeat(len));
@@ -84,11 +88,13 @@ export class TestFrameWorkConsole {
         process.stdout.cursorTo(pos - 1);
         process.stdout.write('▓');
     }
+
     static rewrite(text) {
         process.stdout.clearLine(0);
         process.stdout.cursorTo(0);
         process.stdout.write(text);
     }
+
     static async runAnimation() {
         const c = TestFrameWorkConsole;
         const wait = TestFrameWorkUtils.wait;
@@ -97,27 +103,21 @@ export class TestFrameWorkConsole {
         const minMSTopassOne = 1;
         for (let i = 0; i <= cubes; i++) {
             c.statusBar(cubes, i);
-            await wait(
-                Math.random() * 100 > 90 ? maxMsToPassOne : minMSTopassOne
-            );
+            await wait(Math.random() * 100 > 90 ? maxMsToPassOne : minMSTopassOne);
         }
     }
+
     circleAnimation(action = 'AUTO', baseText = '', speed = 80) {
         if (this.animationOn && action === 'ON') {
             return;
         }
-        this.animationOn =
-            action === 'ON' || (action === 'AUTO' && !this.animationOn)
-                ? true
-                : false;
+        this.animationOn = action === 'ON' || (action === 'AUTO' && !this.animationOn) ? true : false;
 
         if (!this.animationOn) {
             this.animationText = baseText || this.animationText;
             process.stdout.write(colors.hideCursor + ' ');
             process.stdout.cursorTo(0);
-            process.stdout.write(
-                this.animationText + TestFrameWorkConsole.paint(' ✔', 'green')
-            );
+            process.stdout.write(this.animationText + TestFrameWorkConsole.paint(' ✔', 'green'));
             console.log();
             this.animationText = '';
 

@@ -19,14 +19,20 @@
  */
 
 export class APPLinkUtils {
+    static #configs = {
+        baseUrl: 'http://127.0.0.1:8000',
+        userLoginHtmlPath: 'user_login',
+        recordsApiPath: 'api/records',
+    };
+
     constructor() {}
 
-    static buildLoginUrl(baseUrl) {
-        return `${baseUrl}/user_login`;
+    static get htmlLoginUrl() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userLoginHtmlPath}`;
     }
 
-    static buildRecordUrl(baseUrl) {
-        return `${baseUrl}/api/records`;
+    static get recordUrl() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.recordsApiPath}`;
     }
 
     static async PostData(url = '', data = {}, token = null) {
@@ -62,6 +68,10 @@ export class APPLinkUtils {
             throw new Error('cannot get data' + err.toString());
         }
     }
+
+    _debug_get_constants() {
+        return APPLinkUtils.#configs;
+    }
 }
 
 export class APPLinksClient {
@@ -69,24 +79,17 @@ export class APPLinksClient {
         UserWasSet: 'UserWasSet',
         UserWasNotSet: 'UserWasNotSet',
     };
-    #appName;
+
     #newLoginWindowRef = null;
+
+    /** @type {string} */ #appName;
+
     #util = APPLinkUtils;
-    /** @type {UserData} */
-    #UserData;
-    #recordData;
-    baseUrl = 'http://127.0.0.1:8000';
+
+    /** @type {UserData} */ #UserData;
 
     constructor(appName) {
         this.#appName = appName;
-    }
-
-    get #loginUrl() {
-        return `${this.baseUrl}/user_login`;
-    }
-
-    get #recordUrl() {
-        return `${this.baseUrl}/api/records/`;
     }
 
     /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
@@ -99,31 +102,20 @@ export class APPLinksClient {
     }
 
     async loadSavedRecords() {
-        const requestData = {
-            token: this.#UserData?.token || 'asdf',
-            appName: this.#appName,
-        };
-        const url = `${this.#recordUrl}${this.#appName}/`;
-
-        const response = await this.#util.GetData(url, this.#UserData?.token);
-        this.#recordData = response;
-        return response;
+        const url = `${this.#util.recordUrl}/${this.#appName}/`;
+        return await this.#util.GetData(url, this.#UserData?.token);
     }
 
     async savedRecord(dataToSave) {
-        const appName = this.#appName;
-        const url = `${this.#recordUrl}${this.#appName}/`;
-
-        const response = await this.#util.PostData(url, dataToSave, this.#UserData.token);
-        this.#recordData = response;
-        return response;
+        const url = `${this.#util.recordUrl}/${this.#appName}/`;
+        return await this.#util.PostData(url, dataToSave, this.#UserData.token);
     }
 
     /** @type {()=> Promise<UserData>}*/
     async LoginThroughAppLinks() {
         const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh; height :600px; display: flex; flex-direction: row;justify-content: center">
             <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
-                this.#loginUrl
+                this.#util.htmlLoginUrl
             }"></iframe> </div>`;
         const newLoginWindow = window.open('', '', 'width=500,height=700');
         this.#newLoginWindowRef = newLoginWindow;
@@ -148,12 +140,6 @@ export class APPLinksClient {
                 false
             );
             doc.write(html);
-        });
-    }
-
-    checkLoadStatus() {
-        this.#util.GetData(this.#recordUrl, {}).then((r) => {
-            console.log('results', r);
         });
     }
 }
