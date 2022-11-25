@@ -74,23 +74,25 @@ describe('client js class', () => {
                 `{"url":"${constants.baseUrl}/${constants.recordsApiPath}/${appName}/","options":{"headers":{"Authorization":"Token ${userData.token}"}}}`
             );
         });
-        it('load saved records returns data as an object correctly ', async () => {
+        it('returns data correctly after saving records  ', async () => {
             const client = new APPLinksClient(appName);
             client.setUserData(userData);
             const dataToSave = 'data to save';
+            const savedData = { data: dataToSave };
             spyFetch.reset();
             spyFetch.setResponse({ responseBody: { data: dataToSave } });
-            const result = await client.loadSavedRecords();
+            const result = await client.savedRecord(savedData);
             expect(JSON.stringify(result)).toBe(`{"data":"${dataToSave}"}`);
         });
         it('load saved records raises an error if error happened ', async () => {
             const client = new APPLinksClient(appName);
+            const savedData = { myData: 'hi there' };
             client.setUserData(userData);
             const errorMessage = 'no response from server';
             spyFetch.reset();
             spyFetch.setResponse({ throwError: errorMessage });
             try {
-                const result = await client.loadSavedRecords();
+                const result = await client.savedRecord(savedData);
             } catch (err) {
                 expect(err.toString().includes(errorMessage)).toBe(true);
                 return;
