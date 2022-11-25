@@ -44,4 +44,37 @@ describe('client js class', () => {
             throw new Error('load save records did not throw an error');
         });
     });
+    describe('saving data', async () => {
+        it('saves records calls fetch correctly', () => {
+            const client = new APPLinksClient(appName);
+            const savedData = '{}';
+            spyFetch.reset();
+            client.savedRecord('');
+            const calls = spyFetch.getCalls();
+            expect(JSON.stringify(calls[0])).toBe(
+                `{"url":"${constants.baseUrl}/${constants.recordsApiPath}/${appName}/","options":{"headers":{}}}`
+            );
+        });
+        it('load saved records returns data as an object correctly ', async () => {
+            const client = new APPLinksClient(appName);
+            const dataToSave = 'data to save';
+            spyFetch.reset();
+            spyFetch.setResponse({ responseBody: { data: dataToSave } });
+            const result = await client.loadSavedRecords();
+            expect(JSON.stringify(result)).toBe(`{"data":"${dataToSave}"}`);
+        });
+        it('load saved records raises an error if error happened ', async () => {
+            const client = new APPLinksClient(appName);
+            const errorMessage = 'no response from server';
+            spyFetch.reset();
+            spyFetch.setResponse({ throwError: errorMessage });
+            try {
+                const result = await client.loadSavedRecords();
+            } catch (err) {
+                expect(err.toString().includes(errorMessage)).toBe(true);
+                return;
+            }
+            throw new Error('load save records did not throw an error');
+        });
+    });
 });

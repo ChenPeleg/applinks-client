@@ -35,6 +35,13 @@ export class APPLinkUtils {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.recordsApiPath}`;
     }
 
+    /**
+     *
+     * @param {string} url
+     * @param  {Record<string,any>} data
+     * @param  {string} token
+     * @return {Promise<Record<string,any>>}
+     */
     static async PostData(url = '', data = {}, token = null) {
         const headers = {
             'Content-Type': 'application/json',
