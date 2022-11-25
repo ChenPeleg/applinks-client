@@ -88,10 +88,23 @@ export class TestRunner {
             try {
                 await test.test();
                 if (test.type === TestEventTypes.TEST) {
-                    console.log(indentation + test.description + ' ✅  ');
+                    console.log(
+                        indentation +
+                            test.description +
+                            ' ' +
+                            TestFrameWorkConsole.paint(' ✓ ', { color: 'black', background: 'BGgreen' })
+                    );
                 }
             } catch (e) {
-                console.log(indentation + test.description + ' ❌   ');
+                console.log(
+                    indentation +
+                        test.description +
+                        ' ' +
+                        TestFrameWorkConsole.paint(' ✓ ', {
+                            color: 'black',
+                            background: 'BGred',
+                        })
+                );
                 TestFrameWorkConsole.red(indentation + e);
                 failed.push(test.description + ' ' + e);
                 continue;
