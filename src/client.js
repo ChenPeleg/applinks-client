@@ -102,18 +102,27 @@ export class APPLinksClient {
     /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
     setUserData(userSata) {
         if (userSata.firstName && userSata.lastName && userSata.username && userSata.token) {
-            this.#UserData = userSata;
+            this.#UserData = { ...userSata };
             return APPLinksClient.Messages.UserWasSet;
         }
         return APPLinksClient.Messages.UserWasNotSet;
     }
 
+    #validateUserData = (userSata) => userSata.firstName && userSata.lastName && userSata.username && userSata.token;
+
     async loadSavedRecords() {
+        if (!this.#validateUserData(this.#UserData)) {
+            throw new Error('cannot load record without user data');
+        }
+
         const url = `${this.#util.recordUrl}/${this.#appName}/`;
         return await this.#util.GetData(url, this.#UserData?.token);
     }
 
     async savedRecord(dataToSave) {
+        if (!this.#validateUserData(this.#UserData)) {
+            throw new Error('cannot save record without user data');
+        }
         const url = `${this.#util.recordUrl}/${this.#appName}/`;
         return await this.#util.PostData(url, dataToSave, this.#UserData.token);
     }

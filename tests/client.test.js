@@ -1,6 +1,8 @@
-import { APPLinksClient, APPLinkUtils } from '../src/client.js';
-import { fetchMock } from '../utils/testing/mocks/fetch.mock.js';
+import {APPLinksClient, APPLinkUtils} from '../src/client.js';
+import {fetchMock} from '../utils/testing/mocks/fetch.mock.js';
 
+/** @type {UserData}*/
+const userData = { token: 'deadbeef', lastName: 'Smith', firstName: 'John', username: 'john_smith' };
 const appName = 'my-app-name';
 const constants = new APPLinkUtils()._debug_get_constants();
 const spyFetch = fetchMock();
@@ -11,6 +13,19 @@ describe('client js class', () => {
     it('instantiate class witout errors', () => {
         const client = new APPLinksClient(appName);
         expect(!!client).toBe(true);
+    });
+    describe('user data', async () => {
+        it('sets user data correctly when all user data exists', () => {
+            const client = new APPLinksClient(appName);
+            const result = client.setUserData(userData);
+            expect(result).toBe(APPLinksClient.Messages.UserWasSet);
+        });
+        it('doesnt set user data if some data missing', () => {
+            const client = new APPLinksClient(appName);
+            const badUSerData = { userData };
+            const result = client.setUserData(userData);
+            expect(result).toBe(APPLinksClient.Messages.UserWasSet);
+        });
     });
     describe('loading data', async () => {
         it('load saved records calls fetch correctly', () => {
@@ -47,9 +62,9 @@ describe('client js class', () => {
     describe('saving data', async () => {
         it('saves records calls fetch correctly', () => {
             const client = new APPLinksClient(appName);
-            const savedData = '{}';
+            const savedData = { myData: 'hi there' };
             spyFetch.reset();
-            client.savedRecord('');
+            client.savedRecord(savedData);
             const calls = spyFetch.getCalls();
             expect(JSON.stringify(calls[0])).toBe(
                 `{"url":"${constants.baseUrl}/${constants.recordsApiPath}/${appName}/","options":{"headers":{}}}`
