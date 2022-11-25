@@ -1,6 +1,6 @@
 import { APPLinksClient } from '../src/client.js';
 
-const appLinkClient = new APPLinksClient('my-demo-app');
+const appLinkClient = new APPLinksClient('my-demo-app2');
 
 const updateUserUi = (userData /** @type { UserData }*/) => {
     const userState = document.body.querySelector('div.user-state');
