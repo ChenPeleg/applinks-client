@@ -112,7 +112,7 @@ export class APPLinksClient {
 
     async savedRecord(dataToSave) {
         const appName = this.#appName;
-        const url = `${this.#recordUrl}`;
+        const url = `${this.#recordUrl}${this.#appName}/`;
 
         const response = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         this.#recordData = response;
