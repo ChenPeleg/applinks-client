@@ -3,8 +3,8 @@
 /**
  * @typedef UserData
  * @property { string } username
- * @property  { string } firstName
- * @property  { string } lastName
+ * @property  { string } fullName
+ * @property  { string } id
  * @property  { string } token
  */
 
@@ -20,8 +20,8 @@
 
 export class APPLinkUtils {
     static #configs = {
-        baseUrl: 'http://127.0.0.1:8000',
-        userLoginHtmlPath: 'user_login',
+        baseUrl: 'http://localhost:5173',
+        userLoginHtmlPath: '#app-login',
         recordsApiPath: 'api/records',
     };
 
@@ -101,14 +101,14 @@ export class APPLinksClient {
 
     /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
     setUserData(userSata) {
-        if (userSata.firstName && userSata.lastName && userSata.username && userSata.token) {
+        if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
             this.#UserData = { ...userSata };
             return APPLinksClient.Messages.UserWasSet;
         }
         return APPLinksClient.Messages.UserWasNotSet;
     }
 
-    #validateUserData = (userSata) => userSata.firstName && userSata.lastName && userSata.username && userSata.token;
+    #validateUserData = (userSata) => userSata.fullName && userSata.id && userSata.username && userSata.token;
 
     async loadSavedRecords() {
         if (!this.#validateUserData(this.#UserData)) {

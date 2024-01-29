@@ -4,7 +4,7 @@ const appLinkClient = new APPLinksClient('my-demo-app2');
 
 const updateUserUi = (userData /** @type { UserData }*/) => {
     const userState = document.body.querySelector('div.user-state');
-    userState.innerHTML = `Hello, ${userData.firstName} ${userData.lastName} `;
+    userState.innerHTML = `Hello, ${userData.fullName} ${userData.id} `;
     const buttons = document.body.querySelectorAll('button.not-active');
     buttons.forEach((btn) => {
         btn.classList.remove('not-active');
