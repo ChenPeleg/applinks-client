@@ -20,8 +20,8 @@
 
 /**
  * @typedef LoginData
- * @property { RecordData } recordData
- * @property  { UserData } fullName
+ * @property  { UserData } userData
+ * @property { RecordData= } recordData
  */
 
 export class APPLinkUtils {
@@ -67,8 +67,7 @@ export class APPLinkUtils {
         const response = await fetch(url, {
             method: 'POST',
             mode: 'cors',
-            cache: 'no-cache',
-            credentials: 'same-origin',
+            cache: 'no-cache', // credentials: 'same-origin',
             headers: headers,
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify(data), // body data type must match "Content-Type" header
@@ -176,7 +175,7 @@ export class APPLinksClient {
             throw new Error('cannot load record without user data');
         }
 
-        const url = `${this.#util.recordUrl}/`;
+        const url = `${this.#util.recordUrl}`;
         new URLSearchParams({
             applinksAuthToken: this.#UserData?.token || '',
             appId: this.#appId || '',
@@ -197,7 +196,7 @@ export class APPLinksClient {
         return body;
     }
 
-    /** @type {()=> Promise<UserData>}*/
+    /** @type {()=> Promise<LoginData>}*/
     async LoginThroughAppLinks() {
         const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh; height :600px; display: flex; flex-direction: row;justify-content: center">
             <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
@@ -214,7 +213,7 @@ export class APPLinksClient {
                     const data = msg.data;
                     const { userData, appData, appSaveData, token, clientConfig } = data;
                     this.#util.setConfigs(clientConfig);
-                    if (appSaveData) this.#util.serializeRecordData(appSaveData, appData);
+
                     this.#UserData = this.#util.serializeUserData(userData, token);
                     if (this.#newLoginWindowRef) {
                         this.#newLoginWindowRef.close();
@@ -224,7 +223,10 @@ export class APPLinksClient {
                     if (!data?.token) {
                         reject(msg);
                     }
-                    resolve(data);
+                    resolve({
+                        userData: this.#UserData,
+                        recordData: appSaveData ? this.#util.serializeRecordData(appSaveData, appData) : undefined,
+                    });
                 },
                 false
             );

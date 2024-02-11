@@ -12,7 +12,8 @@ const updateUserUi = (userData /** @type { UserData }*/) => {
 };
 
 const loginToServer = async () => {
-    const userData = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
+    const { userData } = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
+    console.log('userData', userData);
     localStorage.setItem('user-data', JSON.stringify(userData));
     updateUserUi(userData);
 };
@@ -41,6 +42,7 @@ const checkLSForUSerData = () => {
     }
 };
 const userFromLS = checkLSForUSerData();
+console.log('userFromLS', userFromLS);
 if (appLinkClient.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
     updateUserUi(userFromLS);
 }
