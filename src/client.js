@@ -85,12 +85,14 @@ export class APPLinkUtils {
 
     static async GetData(url = '', token) {
         try {
-            const headers /** @type {HeadersInit | any} */ = {};
-            if (token) {
-                headers['Authorization'] = 'Token ' + token;
-            }
+            const headers /** @type {HeadersInit | any} */ = {
+                'Content-Type': 'application/json',
+            };
+            // if (token) {
+            //     headers['Authorization'] = 'Token ' + token;
+            // }
             // @ts-ignore
-            const response = await fetch(url, { headers: headers });
+            const response = await fetch(url, { headers: headers, mode: 'no-cors' });
             const asJson = await response.json();
             return {
                 body: asJson,
@@ -175,11 +177,13 @@ export class APPLinksClient {
             throw new Error('cannot load record without user data');
         }
 
-        const url = `${this.#util.recordUrl}`;
-        new URLSearchParams({
-            applinksAuthToken: this.#UserData?.token || '',
-            appId: this.#appId || '',
-        });
+        const url =
+            'https://apps-links.web.app/api/appRecord?' +
+            // `${this.#util.recordUrl}`;
+            new URLSearchParams({
+                applinksAuthToken: this.#UserData?.token || '',
+                appId: this.#appId || '',
+            });
         const { body } = await this.#util.GetData(url, this.#UserData?.token);
         return body;
     }
