@@ -146,14 +146,17 @@ export class APPLinksClient {
 
     #newLoginWindowRef = null;
 
-    /** @type {string} */ #appName;
+    /** @type {string} */ #appId;
 
     #util = APPLinkUtils;
 
     /** @type {UserData} */ #UserData;
 
-    constructor(appName) {
-        this.#appName = appName;
+    /**
+     * @param {string} appId
+     */
+    constructor(appId) {
+        this.#appId = appId;
     }
 
     /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
@@ -173,7 +176,11 @@ export class APPLinksClient {
             throw new Error('cannot load record without user data');
         }
 
-        const url = `${this.#util.recordUrl}/${this.#appName}/`;
+        const url = `${this.#util.recordUrl}/`;
+        new URLSearchParams({
+            applinksAuthToken: this.#UserData?.token || '',
+            appId: this.#appId || '',
+        });
         const { body } = await this.#util.GetData(url, this.#UserData?.token);
         return body;
     }
@@ -185,7 +192,7 @@ export class APPLinksClient {
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot save record without user data');
         }
-        const url = `${this.#util.recordUrl}/${this.#appName}/`;
+        const url = `${this.#util.recordUrl}/${this.#appId}/`;
         const { body } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         return body;
     }
