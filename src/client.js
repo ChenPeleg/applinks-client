@@ -103,6 +103,36 @@ export class APPLinkUtils {
         }
     }
 
+    /**
+     * @param {{ Email: any; FullName: any; UID: any; }} userData
+     * @param {any} TokenKey
+     * @returns {UserData}
+     */
+    static serializeUserData(userData, TokenKey) {
+        return {
+            username: userData.Email,
+            fullName: userData.FullName,
+            id: userData.UID,
+            token: TokenKey,
+        };
+    }
+
+    /**
+     * @param {{ Data: any; AppId: any; message: any; Timestamp: any; UserId: any; }} recordData
+     * @param {{ Name: any; }} appData
+     * @returns {RecordData}
+     */
+    static serializeRecordData(recordData, appData) {
+        return {
+            app_data: recordData.Data,
+            app_name: appData.Name,
+            app_id: recordData.AppId,
+            message: recordData.message || '',
+            saved_date: recordData.Timestamp,
+            user_id: recordData.UserId,
+        };
+    }
+
     _debug_get_constants() {
         return APPLinkUtils.#configs;
     }
@@ -175,7 +205,10 @@ export class APPLinksClient {
                 'message',
                 (msg) => {
                     const data = msg.data;
-                    this.#UserData = data;
+                    const { userData, appData, appSaveData, token, clientConfig } = data;
+                    this.#util.setConfigs(clientConfig);
+                    if (appSaveData) this.#util.serializeRecordData(appSaveData, appData);
+                    this.#UserData = this.#util.serializeUserData(userData, token);
                     if (this.#newLoginWindowRef) {
                         this.#newLoginWindowRef.close();
                         this.#newLoginWindowRef = null;
