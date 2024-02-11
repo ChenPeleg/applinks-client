@@ -29,6 +29,8 @@ export class APPLinkUtils {
         baseUrl: 'http://localhost:5173',
         userLoginHtmlPath: '#app-login',
         recordsApiPath: 'api/records',
+        localStorageTokenKey: 'app-links-user-data',
+        localStorageConfigData: 'app-links-config-data',
     };
 
     constructor() {}
@@ -39,6 +41,13 @@ export class APPLinkUtils {
 
     static get recordUrl() {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.recordsApiPath}`;
+    }
+
+    /**
+     * @param {{ baseUrl: string; userLoginHtmlPath: string; recordsApiPath: string; localStorageTokenKey: string; }} configs
+     */
+    static setConfigs(configs) {
+        APPLinkUtils.#configs = { ...APPLinkUtils.#configs, ...configs };
     }
 
     /**
@@ -64,7 +73,15 @@ export class APPLinkUtils {
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify(data), // body data type must match "Content-Type" header
         });
-        return response.json(); // parses JSON response into native JavaScript objects
+        return {
+            body: await response.json(),
+            status: response.status,
+            headers: response.headers,
+        }; // parses
+        // JSON response
+        // into
+        // native
+        // JavaScript objects
     }
 
     static async GetData(url = '', token) {
@@ -76,7 +93,11 @@ export class APPLinkUtils {
             // @ts-ignore
             const response = await fetch(url, { headers: headers });
             const asJson = await response.json();
-            return asJson;
+            return {
+                body: asJson,
+                status: response.status,
+                headers: response.headers,
+            };
         } catch (err) {
             throw new Error('cannot get data' + err.toString());
         }
@@ -114,7 +135,8 @@ export class APPLinksClient {
         return APPLinksClient.Messages.UserWasNotSet;
     }
 
-    #validateUserData = (userSata) => userSata.fullName && userSata.id && userSata.username && userSata.token;
+    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
+        userSata.fullName && userSata.id && userSata.username && userSata.token;
 
     async loadSavedRecords() {
         if (!this.#validateUserData(this.#UserData)) {
@@ -122,7 +144,8 @@ export class APPLinksClient {
         }
 
         const url = `${this.#util.recordUrl}/${this.#appName}/`;
-        return await this.#util.GetData(url, this.#UserData?.token);
+        const { body } = await this.#util.GetData(url, this.#UserData?.token);
+        return body;
     }
 
     /**
@@ -133,7 +156,8 @@ export class APPLinksClient {
             throw new Error('cannot save record without user data');
         }
         const url = `${this.#util.recordUrl}/${this.#appName}/`;
-        return await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        const { body } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        return body;
     }
 
     /** @type {()=> Promise<UserData>}*/
