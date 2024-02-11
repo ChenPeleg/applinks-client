@@ -18,6 +18,12 @@
  * @property  { string } user_id
  */
 
+/**
+ * @typedef LoginData
+ * @property { RecordData } recordData
+ * @property  { UserData } fullName
+ */
+
 export class APPLinkUtils {
     static #configs = {
         baseUrl: 'http://localhost:5173',
@@ -119,6 +125,9 @@ export class APPLinksClient {
         return await this.#util.GetData(url, this.#UserData?.token);
     }
 
+    /**
+     * @param {Record<string, any>} dataToSave
+     */
     async savedRecord(dataToSave) {
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot save record without user data');
