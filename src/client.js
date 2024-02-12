@@ -26,7 +26,7 @@
 
 export class APPLinkUtils {
     static #configs = {
-        baseUrl: 'https://apps-links.web.app/',
+        baseUrl: 'https://apps-links.web.app',
         userLoginHtmlPath: '#app-login',
         recordsApiPath: 'api/appRecord',
         localStorageTokenKey: 'app-links-user-data',
@@ -105,9 +105,9 @@ export class APPLinkUtils {
                 referrerPolicy: 'no-referrer',
             });
             console.log('response', response);
-            // const asJson = await response.json();
+            const asJson = await response.json();
             return {
-                body: '', // asJson,
+                body: asJson,
                 status: 200, //response.status,
                 headers: response.headers,
             };
@@ -135,7 +135,7 @@ export class APPLinkUtils {
      * @param {{ Name: any; }} appData
      * @returns {RecordData}
      */
-    static serializeRecordData(recordData, appData) {
+    static serializeRecordData(recordData, appData = { Name: '' }) {
         return {
             app_data: recordData.Data,
             app_name: appData.Name,
@@ -195,7 +195,7 @@ export class APPLinksClient {
                 appId: this.#appId || '',
             });
         const { body } = await this.#util.GetData(url, this.#UserData?.token);
-        return body;
+        return this.#util.serializeRecordData(body);
     }
 
     /**
@@ -206,8 +206,8 @@ export class APPLinksClient {
             throw new Error('cannot save record without user data');
         }
         const url = `${this.#util.recordUrl}/${this.#appId}/`;
-        const { body } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
-        return body;
+        const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        return this.#util.serializeRecordData(body);
     }
 
     /** @type {()=> Promise<LoginData>}*/
