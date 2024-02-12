@@ -20,7 +20,7 @@ const loginToServer = async () => {
 const loadData = async () => {
     const result = /** @type { RecordData }*/ await appLinkClient.loadSavedRecords();
     if (result?.app_data) {
-        const app_data = JSON.parse(result.app_data);
+        const app_data = result.app_data;
         if (app_data.dataText) {
             document.querySelector('#data-input').value = app_data.dataText;
         }

@@ -70,17 +70,13 @@ export class APPLinkUtils {
             cache: 'no-cache', // credentials: 'same-origin',
             headers: headers,
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
+            body: JSON.stringify({ Data: data }),
         });
         return {
             body: await response.json(),
             status: response.status,
             headers: response.headers,
-        }; // parses
-        // JSON response
-        // into
-        // native
-        // JavaScript objects
+        };
     }
 
     /**
@@ -104,11 +100,11 @@ export class APPLinkUtils {
                 redirect: 'follow', // manual, *follow, error
                 referrerPolicy: 'no-referrer',
             });
-            console.log('response', response);
+
             const asJson = await response.json();
             return {
                 body: asJson,
-                status: 200, //response.status,
+                status: response.status,
                 headers: response.headers,
             };
         } catch (err) {
@@ -205,7 +201,11 @@ export class APPLinksClient {
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot save record without user data');
         }
-        const url = `${this.#util.recordUrl}/${this.#appId}/`;
+        const url =
+            `${this.#util.recordUrl}?` +
+            new URLSearchParams({
+                appId: this.#appId || '',
+            });
         const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         return this.#util.serializeRecordData(body);
     }
