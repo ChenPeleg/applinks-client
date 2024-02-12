@@ -55,9 +55,9 @@ export class APPLinkUtils {
      * @param {string} url
      * @param  {Record<string,any>} data
      * @param  {string} token
-     * @return {Promise<Record<string,any>>}
+     * @return { Promise<{ body: any; status: number; headers: Headers; }>}
      */
-    static async PostData(url = '', data = {}, token = null) {
+    static async PostData(url = '', data = {}, token) {
         const headers = {
             'Content-Type': 'application/json',
         };
@@ -195,6 +195,15 @@ export class APPLinksClient {
     }
 
     /**
+     * @param { Headers  } headers
+     */
+    async checkHeadersForAdditionalAction(headers) {
+        if (headers.get('x-action') === 'login') {
+            await this.LoginThroughAppLinks();
+        }
+    }
+
+    /**
      * @param {Record<string, any>} dataToSave
      */
     async savedRecord(dataToSave) {
@@ -207,6 +216,7 @@ export class APPLinksClient {
                 appId: this.#appId || '',
             });
         const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        await this.checkHeadersForAdditionalAction(headers);
         return this.#util.serializeRecordData(body);
     }
 
