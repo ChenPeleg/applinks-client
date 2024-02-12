@@ -78,7 +78,10 @@ export class ApplinksPanel {
 
         this.#panelElement = this.#createPanelElement();
         document.body.appendChild(this.#panelElement);
+        this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId));
     }
+
+    #addCSS = (css) => (document.head.appendChild(document.createElement('style')).innerHTML = css);
 
     #createPanelElement() {
         const element = document.createElement('div');
