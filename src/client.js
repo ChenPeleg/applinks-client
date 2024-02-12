@@ -31,7 +31,7 @@ export class APPLinkUtils {
         baseUrl: 'https://apps-links.web.app',
         userLoginHtmlPath: '#app-login',
         recordsApiPath: 'api/appRecord',
-        localStorageTokenKey: 'app-links-user-data',
+        localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
     };
 
@@ -50,6 +50,17 @@ export class APPLinkUtils {
      */
     static setConfigs(configs) {
         APPLinkUtils.#configs = { ...APPLinkUtils.#configs, ...configs };
+    }
+
+    /**
+     * @param {any} userData
+     */
+    static storeUserDataToLocalStorage(userData) {
+        localStorage.setItem(APPLinkUtils.#configs.localStorageUserData, JSON.stringify(userData));
+    }
+
+    static getUserDataFromLocalStorage() {
+        return localStorage.getItem(APPLinkUtils.#configs.localStorageUserData);
     }
 
     /**
@@ -154,18 +165,14 @@ export class APPLinksClient {
         UserWasSet: 'UserWasSet',
         UserWasNotSet: 'UserWasNotSet',
     };
-
     #newLoginWindowRef = null;
     /**
      *
      * @type {ApplinksPanel | false}
      */
     #usePanel = false;
-
     /** @type {string} */ #appId;
-
     #util = APPLinkUtils;
-
     /** @type {UserData} */ #UserData;
 
     /**
@@ -174,8 +181,31 @@ export class APPLinksClient {
      */
     constructor(appId, options = { useDefaultPanel: false }) {
         this.#appId = appId;
-        this.#usePanel = options.useDefaultPanel ? new ApplinksPanel() : false;
+        this.#setUpPanel(options);
     }
+
+    get userStatus() {
+        return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
+    }
+
+    #setUpPanel = (/** @type {{ useDefaultPanel: any; }} */ options) => {
+        if (options.useDefaultPanel) {
+            this.#usePanel = new ApplinksPanel();
+            this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
+                this.#applinksClientPanelAction(action);
+        }
+    };
+
+    #applinksClientPanelAction = async (/** @type {"login" | "logout" } */ action) => {
+        switch (action) {
+            case 'login':
+                const { userData } = /** @type { UserData }*/ await this.LoginThroughAppLinks();
+                localStorage.setItem('user-data', JSON.stringify(userData));
+                break;
+            case 'logout':
+                break;
+        }
+    };
 
     /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
     setUserData(userSata) {
@@ -282,5 +312,26 @@ export class APPLinksClient {
             );
             doc.write(html);
         });
+    }
+
+    saveUserDataToLocalStorage() {
+        this.#util.storeUserDataToLocalStorage(this.#UserData);
+    }
+
+    tryToUpdateUserDataFromLocalStorage() {
+        const checkLSForUSerData = () => {
+            const userDAtaFromLS = this.#util.getUserDataFromLocalStorage();
+            if (!userDAtaFromLS?.length) {
+                return false;
+            } else {
+                return JSON.parse(userDAtaFromLS);
+            }
+        };
+        const userFromLS = checkLSForUSerData();
+
+        if (this.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
+            return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
+        }
+        return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
     }
 }

@@ -115,6 +115,9 @@ export class ApplinksPanel {
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId));
     }
 
+    actionCallBack = () => {
+    };
+
     /**
      *
      * @param {AppLinkPanelStatusDisplay} status
@@ -172,35 +175,52 @@ export class ApplinksPanel {
         const element = document.createElement('div');
 
         const innerHtml = `
+        <dialog>
+          <button autofocus>Close</button>
+          <p>This modal dialog has a groovy backdrop!</p>
+        </dialog>
+      
+
         <div id="${this.#applinksPanelId}-wrapper" >
         <div id="${this.#applinksPanelId}-main-user-button">
-        <div id="${this.#applinksPanelId}-unloged-user"  
-        class="${this.#applinksPanelId}-main-icon active" style="display: flex">
-        ${ApplinksPanelOptionsGraphicUtils.userIcon}
-        </div>
-        <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
-        style="display: none">
-          ${ApplinksPanelOptionsGraphicUtils.cloudUpdateIcon}
-        </div>
-          <div id="${this.#applinksPanelId}-cloud-complete"  class="${this.#applinksPanelId}-main-icon"
-        style="display: none">
-          ${ApplinksPanelOptionsGraphicUtils.cloudCompleteIcon}
-        </div> 
-          <div id="${this.#applinksPanelId}-cloud-error"  class="${this.#applinksPanelId}-main-icon"
-        style="display: none">
-          ${ApplinksPanelOptionsGraphicUtils.cloudErrorIcon}
-        </div>
-          <div id="${this.#applinksPanelId}-user-logged"  class="${this.#applinksPanelId}-main-icon"
-        style="display: none">
-          ${ApplinksPanelOptionsGraphicUtils.userLoggedIcon}
-        </div>
+            <div id="${this.#applinksPanelId}-unloged-user"  
+            class="${this.#applinksPanelId}-main-icon active" style="display: flex">
+            ${ApplinksPanelOptionsGraphicUtils.userIcon}
+            </div>
+            <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
+            style="display: none">
+              ${ApplinksPanelOptionsGraphicUtils.cloudUpdateIcon}
+            </div>
+              <div id="${this.#applinksPanelId}-cloud-complete"  class="${this.#applinksPanelId}-main-icon"
+            style="display: none">
+              ${ApplinksPanelOptionsGraphicUtils.cloudCompleteIcon}
+            </div> 
+              <div id="${this.#applinksPanelId}-cloud-error"  class="${this.#applinksPanelId}-main-icon"
+            style="display: none">
+              ${ApplinksPanelOptionsGraphicUtils.cloudErrorIcon}
+            </div>
+              <div id="${this.#applinksPanelId}-user-logged"  class="${this.#applinksPanelId}-main-icon"
+            style="display: none">
+              ${ApplinksPanelOptionsGraphicUtils.userLoggedIcon}
+            </div>
         
         </div>
         </div>`;
         element.innerHTML = innerHtml;
+        element.addEventListener("click", (ev) => {
+            this.#clickHandler(ev);
+        });
 
         return element;
     }
+
+    #clickHandler = (ev) => {
+        if (this.#status === 'not-logged-in') {
+
+        }
+        console.log('click', ev);
+        // dialog.showModal();
+    };
 }
 
 // const panel = new ApplinksPanel();
