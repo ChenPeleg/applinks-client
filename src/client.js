@@ -88,15 +88,23 @@ export class APPLinkUtils {
             const headers /** @type {HeadersInit | any} */ = {
                 'Content-Type': 'application/json',
             };
-            // if (token) {
-            //     headers['Authorization'] = 'Token ' + token;
-            // }
+            if (token) {
+                headers['Authorization'] = 'Token ' + token;
+            }
             // @ts-ignore
-            const response = await fetch(url, { headers: headers, mode: 'no-cors' });
-            const asJson = await response.json();
+            const response = await fetch(url, {
+                // headers: headers,
+                mode: 'cors',
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                redirect: 'follow', // manual, *follow, error
+                referrerPolicy: 'no-referrer',
+            });
+            console.log('response', response);
+            // const asJson = await response.json();
             return {
-                body: asJson,
-                status: response.status,
+                body: '', // asJson,
+                status: 200, //response.status,
                 headers: response.headers,
             };
         } catch (err) {
