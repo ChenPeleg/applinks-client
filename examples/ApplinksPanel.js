@@ -32,7 +32,7 @@ class ApplinksPanelOptionsGraphicUtils {
       
     }
     .${id}-main-icon {
-    cursor: pointer;
+        cursor: pointer;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -40,11 +40,18 @@ class ApplinksPanelOptionsGraphicUtils {
         background-color: aliceblue;
         width: 35px;
         height: 35px;
-        box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1); 
         &:hover {
             box-shadow: 0 0 2px 2px rgba(50, 50, 50, 0.2);
         }
-        transition: box-shadow 0.2s;
+        transition: box-shadow 0.2s, opacity 0.2s; 
+    }
+    .${id}-main-icon svg {
+        transition: box-shadow 0.2s, opacity 0.05s; 
+        opacity: 0;
+     }
+    .${id}-main-icon.active svg {
+       opacity: 1;
     }
     #${id}-unloged-user {
         
@@ -95,6 +102,8 @@ export class ApplinksPanel {
     /** @type {HTMLDivElement}     */
     #panelElement = null;
 
+    #returnToUserInterval = null;
+
     /**
      * @param {ApplinksPanelOptions} [panelOptions]
      */
@@ -120,8 +129,12 @@ export class ApplinksPanel {
                 const el = document.getElementById(`${this.#applinksPanelId}-${i}`);
                 if (i === icon) {
                     el.style.display = 'flex';
+                    setTimeout(() => {
+                        el.classList.add('active');
+                    }, 100);
                 } else {
                     el.style.display = 'none';
+                    el.classList.remove('active');
                 }
             });
         };
@@ -136,6 +149,10 @@ export class ApplinksPanel {
                 break;
             case 'updateComplete':
                 showOnly('cloud-complete');
+                clearTimeout(this.#returnToUserInterval);
+                this.#returnToUserInterval = setTimeout(() => {
+                    this.setStatus('logged-in');
+                }, 2000);
 
                 break;
             case 'error':
@@ -158,7 +175,7 @@ export class ApplinksPanel {
         <div id="${this.#applinksPanelId}-wrapper" >
         <div id="${this.#applinksPanelId}-main-user-button">
         <div id="${this.#applinksPanelId}-unloged-user"  
-        class="${this.#applinksPanelId}-main-icon" style="display: flex">
+        class="${this.#applinksPanelId}-main-icon active" style="display: flex">
         ${ApplinksPanelOptionsGraphicUtils.userIcon}
         </div>
         <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
