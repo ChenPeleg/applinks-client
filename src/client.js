@@ -172,7 +172,7 @@ export class APPLinksClient {
         this.#appId = appId;
     }
 
-    /** @type {(userSata : UserData)=> (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
+    /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
     setUserData(userSata) {
         if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
             this.#UserData = { ...userSata };
