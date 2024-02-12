@@ -1,6 +1,6 @@
 import { APPLinksClient } from '../src/client.js';
 
-const appLinkClient = new APPLinksClient('app1Id');
+const appLinkClient = new APPLinksClient('app1Id', { useDefaultPanel: true });
 
 const updateUserUi = (userData /** @type { UserData }*/) => {
     const userState = document.body.querySelector('div.user-state');

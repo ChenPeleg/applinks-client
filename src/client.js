@@ -18,6 +18,8 @@
  * @property  { string } user_id
  */
 
+import {ApplinksPanel} from '../examples/ApplinksPanel.js';
+
 /**
  * @typedef LoginData
  * @property  { UserData } userData
@@ -154,6 +156,11 @@ export class APPLinksClient {
     };
 
     #newLoginWindowRef = null;
+    /**
+     *
+     * @type {ApplinksPanel | false}
+     */
+    #usePanel = false;
 
     /** @type {string} */ #appId;
 
@@ -163,9 +170,11 @@ export class APPLinksClient {
 
     /**
      * @param {string} appId
+     * @param {{useDefaultPanel : boolean}} options
      */
-    constructor(appId) {
+    constructor(appId, options = { useDefaultPanel: false }) {
         this.#appId = appId;
+        this.#usePanel = options.useDefaultPanel ? new ApplinksPanel() : false;
     }
 
     /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
@@ -174,13 +183,26 @@ export class APPLinksClient {
             this.#UserData = { ...userSata };
             return APPLinksClient.Messages.UserWasSet;
         }
+        this.updatePanelStatus('logged-in');
         return APPLinksClient.Messages.UserWasNotSet;
+    }
+
+    /**
+     *
+     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in"} status
+     */
+    updatePanelStatus(status) {
+        if (!this.#usePanel) {
+            return;
+        }
+        this.#usePanel.setStatus(status);
     }
 
     #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
         userSata.fullName && userSata.id && userSata.username && userSata.token;
 
     async loadSavedRecords() {
+        this.updatePanelStatus('updating');
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot load record without user data');
         }
@@ -191,6 +213,7 @@ export class APPLinksClient {
                 appId: this.#appId || '',
             });
         const { body } = await this.#util.GetData(url, this.#UserData?.token);
+        this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
     }
 
@@ -210,6 +233,7 @@ export class APPLinksClient {
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot save record without user data');
         }
+        this.updatePanelStatus('updating');
         const url =
             `${this.#util.recordUrl}?` +
             new URLSearchParams({
@@ -217,6 +241,7 @@ export class APPLinksClient {
             });
         const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         await this.checkHeadersForAdditionalAction(headers);
+        this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
     }
 
@@ -247,6 +272,7 @@ export class APPLinksClient {
                     if (!data?.token) {
                         reject(msg);
                     }
+                    this.updatePanelStatus('logged-in');
                     resolve({
                         userData: this.#UserData,
                         recordData: appSaveData ? this.#util.serializeRecordData(appSaveData, appData) : undefined,
