@@ -177,11 +177,20 @@ export class APPLinksClient {
 
     /**
      * @param {string} appId
-     * @param {{useDefaultPanel : boolean}} options
+     * @param {{useDefaultPanel : boolean, loadUserDataFromStorage : boolean}} options
      */
-    constructor(appId, options = { useDefaultPanel: false }) {
+    constructor(
+        appId,
+        options = {
+            useDefaultPanel: false,
+            loadUserDataFromStorage: true,
+        }
+    ) {
         this.#appId = appId;
         this.#setUpPanel(options);
+        if (options.loadUserDataFromStorage) {
+            this.tryToUpdateUserDataFromLocalStorage();
+        }
     }
 
     get userStatus() {
