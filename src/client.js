@@ -26,9 +26,9 @@
 
 export class APPLinkUtils {
     static #configs = {
-        baseUrl: 'http://localhost:5173',
+        baseUrl: 'https://apps-links.web.app/',
         userLoginHtmlPath: '#app-login',
-        recordsApiPath: 'api/records',
+        recordsApiPath: 'api/appRecord',
         localStorageTokenKey: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
     };
@@ -83,6 +83,10 @@ export class APPLinkUtils {
         // JavaScript objects
     }
 
+    /**
+     * @param url
+     * @param {string} token
+     */
     static async GetData(url = '', token) {
         try {
             const headers /** @type {HeadersInit | any} */ = {
@@ -91,9 +95,9 @@ export class APPLinkUtils {
             if (token) {
                 headers['Authorization'] = 'Token ' + token;
             }
-            // @ts-ignore
+
             const response = await fetch(url, {
-                // headers: headers,
+                headers: headers,
                 mode: 'cors',
                 cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
                 credentials: 'same-origin', // include, *same-origin, omit
@@ -186,10 +190,8 @@ export class APPLinksClient {
         }
 
         const url =
-            'https://apps-links.web.app/api/appRecord?' +
-            // `${this.#util.recordUrl}`;
+            `${this.#util.recordUrl}?` +
             new URLSearchParams({
-                applinksAuthToken: this.#UserData?.token || '',
                 appId: this.#appId || '',
             });
         const { body } = await this.#util.GetData(url, this.#UserData?.token);
