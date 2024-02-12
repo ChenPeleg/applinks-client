@@ -2,7 +2,12 @@ import {APPLinksClient, APPLinkUtils} from '../src/client.js';
 import {fetchMock} from '../utils/testing/mocks/fetch.mock.js';
 
 /** @type {UserData}*/
-const userData = { token: 'deadbeef', lastName: 'Smith', firstName: 'John', username: 'john_smith' };
+const userData = {
+    token: 'deadbeef',
+    id: 'Smith',
+    fullName: 'John',
+    username: 'john_smith',
+};
 const appName = 'my-app-name';
 const constants = new APPLinkUtils()._debug_get_constants();
 const spyFetch = fetchMock();
