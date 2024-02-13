@@ -30,6 +30,8 @@ export class APPLinkUtils {
     static #configs = {
         baseUrl: 'https://apps-links.web.app',
         userLoginHtmlPath: '#app-login',
+        userHelpHtmlPath: '#help',
+        userAccountHtmlPath: '#account',
         recordsApiPath: 'api/appRecord',
         localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
@@ -205,13 +207,17 @@ export class APPLinksClient {
         }
     };
 
-    #applinksClientPanelAction = async (/** @type {"login" | "logout" } */ action) => {
+    #applinksClientPanelAction = async (/** @type {"login" | "logout" | "help" | "account" } */ action) => {
         switch (action) {
             case 'login':
                 const { userData } = /** @type { UserData }*/ await this.LoginThroughAppLinks();
                 localStorage.setItem('user-data', JSON.stringify(userData));
                 break;
             case 'logout':
+                break;
+            case 'help':
+                break;
+            case 'account':
                 break;
         }
     };
