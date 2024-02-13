@@ -53,11 +53,11 @@ class ApplinksPanelOptionsGraphicUtils {
         }
         transition: box-shadow 0.2s, opacity 0.2s; 
     }
-    .${id}-main-icon svg {
+    .${id}-main-icon:not(#${id}-cloud-complete) svg {
         transition: box-shadow 0.2s, opacity 0.05s; 
         opacity: 0;
      }
-    .${id}-main-icon.active svg {
+    .${id}-main-icon.active:not(#${id}-cloud-complete) svg {
        opacity: 1;
     }
     #${id}-unloged-user {
@@ -403,6 +403,8 @@ export class ApplinksPanel {
 
         ['account', 'help', 'logout'].forEach((id) => {
             document.querySelector(`#${this.#applinksPanelId}-button-${id}`).addEventListener('click', (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
                 this.#commitAction(id);
                 // @ts-ignore
                 popover.hidePopover();
@@ -411,10 +413,6 @@ export class ApplinksPanel {
         });
 
 
-        setTimeout(() => {
-            // @ts-ignore
-            popover.showPopover();
-        }, 100);
     };
 }
 
