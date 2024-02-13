@@ -76,7 +76,7 @@ class ApplinksPanelOptionsGraphicUtils {
        #${id}-popover-login-name {
          font-weight: bold;
        }
-       .applinks-panel-popover-content {
+        .applinks-panel-popover-content {
                 padding 0;
                 width: 100%;
                 display: flex;
@@ -315,9 +315,8 @@ export class ApplinksPanel {
                 <div class="applinks-panel-menu-item"> <div> Support </div> </div>
                 </div>
             </div>
-        </div>
-      
-
+        </div>`;
+        const moreInnerHtml = `
         <div id="${this.#applinksPanelId}-wrapper" >
         <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" popovertarget="${this.#applinksPanelId}-popover">
             <div id="${this.#applinksPanelId}-unloged-user"  
@@ -354,7 +353,7 @@ export class ApplinksPanel {
         const mainElement = document.querySelector(`#${this.#applinksPanelId}-wrapper`);
         const popover = document.querySelector(`#${this.#applinksPanelId}-popover`);
 
-        mainElement.addEventListener('click', (ev) => {
+        mainElement?.addEventListener('click', (ev) => {
             if (this.#status === 'not-logged-in') {
                 // @ts-ignore
                 popover.showPopover();
