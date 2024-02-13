@@ -45,8 +45,8 @@ class ApplinksPanelOptionsGraphicUtils {
         align-items: center;
         border-radius: 50%;
         background-color: aliceblue;
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1); 
         &:hover {
             box-shadow: 0 0 2px 2px rgba(50, 50, 50, 0.2);
@@ -63,7 +63,7 @@ class ApplinksPanelOptionsGraphicUtils {
   
     #${id}-user-initials {
         color : black;
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
     #${id}-popover {
         
@@ -318,12 +318,15 @@ export class ApplinksPanel {
                 showOnly('cloud-error');
                 break;
             case 'logged-in':
-
                 showOnly('user-logged');
                 const userInitials = document.getElementById(`${this.#applinksPanelId}-user-initials`);
+
+                if (userInitials.innerHTML) {
+                    return;
+                }
+
                 const name = userData?.fullName || userData?.username || 'User';
                 const initials = name.split(' ').map((n) => n[0]).join('');
-                console.log('initials', userData);
                 userInitials.innerHTML = initials;
                 break;
             default:
@@ -339,7 +342,7 @@ export class ApplinksPanel {
         const element = document.createElement('div');
 
         const userIcon = this.panelOptions.userIcon === 'initials' ?
-            `<div id="${this.#applinksPanelId}-user-initials"> </div>` :
+            `<div id="${this.#applinksPanelId}-user-initials"></div>` :
             ApplinksPanelOptionsGraphicUtils.userLoggedIcon;
 
         const innerHtml = `
