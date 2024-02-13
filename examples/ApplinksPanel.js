@@ -71,11 +71,13 @@ class ApplinksPanelOptionsGraphicUtils {
         font-size: 0.9rem;
         font-family: sans-serif;
         width: 200px;
+        overflow: hidden;
        
        #${id}-popover-login-name {
-       font-weight: bold;
-        }
-        .applinks-panel-popover-content {
+         font-weight: bold;
+       }
+       .applinks-panel-popover-content {
+                padding 0;
                 width: 100%;
                 display: flex;
                 flex-direction: column;
@@ -92,11 +94,13 @@ class ApplinksPanelOptionsGraphicUtils {
                     align-items: center;
                     justify-content: center;
                     .applinks-panel-menu-item {
+                    
+                    width: 100%;
                         display: flex;
                         flex-direction: row;
                         align-items: center;
                         
-                        width: 100%;
+                      
                         padding: 10px 5px;
                         cursor: pointer;
                         transition: none;
@@ -232,8 +236,7 @@ export class ApplinksPanel {
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId));
     }
 
-    actionCallBack = () => {
-    };
+    actionCallBack = () => {};
 
     /**
      *
@@ -285,14 +288,18 @@ export class ApplinksPanel {
         }
     }
 
-    #addCSS = (css) => (document.head.appendChild(document.createElement('style')).innerHTML =
-        css);
+    #addCSS = (css) => {
+        // document.head.appendChild(document.createElement('style')).innerHTML = css;
+        const sheet = new CSSStyleSheet();
+        sheet.replace(css);
+        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+    };
 
     #createPanelElement() {
         const element = document.createElement('div');
 
         const innerHtml = `
-        <div popover id="${this.#applinksPanelId}-popover"  >
+        <div   id="${this.#applinksPanelId}-popover"  style="position:fixed; top:0px" >
         
             <div class="close-container">
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
@@ -347,7 +354,7 @@ export class ApplinksPanel {
         const mainElement = document.querySelector(`#${this.#applinksPanelId}-wrapper`);
         const popover = document.querySelector(`#${this.#applinksPanelId}-popover`);
 
-        mainElement.addEventListener("click", (ev) => {
+        mainElement.addEventListener('click', (ev) => {
             if (this.#status === 'not-logged-in') {
                 // @ts-ignore
                 popover.showPopover();
@@ -356,24 +363,19 @@ export class ApplinksPanel {
             popover.showPopover();
             console.log('click', ev);
         });
-        popover.addEventListener("close", (ev) => {
+        popover.addEventListener('close', (ev) => {
             console.log('close', ev);
         });
-        document.querySelector(`#${this.#applinksPanelId}-popover-close`)
-            .addEventListener("click", (ev) => {
-                // @ts-ignore
-                popover.hidePopover();
-            });
+        document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', (ev) => {
+            // @ts-ignore
+            popover.hidePopover();
+        });
 
         setTimeout(() => {
             // @ts-ignore
             popover.showPopover();
         }, 100);
-
-
     };
-
-
 }
 
 // const panel = new ApplinksPanel();
