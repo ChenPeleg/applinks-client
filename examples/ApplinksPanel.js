@@ -10,7 +10,7 @@ class ApplinksPanelOptionsGraphicUtils {
 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M792-56 686-160H260q-92 0-156-64T40-380q0-77 47.5-137T210-594q3-8 6-15.5t6-16.5L56-792l56-56 736 736-56 56ZM260-240h346L284-562q-2 11-3 21t-1 21h-20q-58 0-99 41t-41 99q0 58 41 99t99 41Zm185-161Zm419 191-58-56q17-14 25.5-32.5T840-340q0-42-29-71t-71-29h-60v-80q0-83-58.5-141.5T480-720q-27 0-52 6.5T380-693l-58-58q35-24 74.5-36.5T480-800q117 0 198.5 81.5T760-520q69 8 114.5 59.5T920-340q0 39-15 72.5T864-210ZM593-479Z"/></svg>`;
     static userLoggedIcon = `
 <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path d="M360-390q-21 0-35.5-14.5T310-440q0-21 14.5-35.5T360-490q21 0 35.5 14.5T410-440q0 21-14.5 35.5T360-390Zm240 0q-21 0-35.5-14.5T550-440q0-21 14.5-35.5T600-490q21 0 35.5 14.5T650-440q0 21-14.5 35.5T600-390ZM480-160q134 0 227-93t93-227q0-24-3-46.5T786-570q-21 5-42 7.5t-44 2.5q-91 0-172-39T390-708q-32 78-91.5 135.5T160-486v6q0 134 93 227t227 93Zm0 80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm-54-715q42 70 114 112.5T700-640q14 0 27-1.5t27-3.5q-42-70-114-112.5T480-800q-14 0-27 1.5t-27 3.5ZM177-581q51-29 89-75t57-103q-51 29-89 75t-57 103Zm249-214Zm-103 36Z"/></svg>`;
-
+    static xIcon = `<svg width="17" height="17" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3.41602 3.625L13.4151 13.625" stroke="#979699" stroke-linecap="round"></path><path d="M13.415 3.625L3.41596 13.625" stroke="#979699" stroke-linecap="round"></path></svg>`;
     static getCss = (id) => `
     :root {
        --popover-transition-duration: 0.1s;
@@ -67,6 +67,27 @@ class ApplinksPanelOptionsGraphicUtils {
         font-size: 1rem;
         font-family: sans-serif;
         padding: 20px;
+        .close-container{
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 10px;
+            div.close-container-button {
+                padding: 5px;
+                cursor: pointer;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 50%;
+                transition: none;
+                &:hover {
+                   transition: none;
+                    background-color: #f0f0f0;
+                }
+            }
+        }
     }
     #${id}-popover-close {
     
@@ -92,7 +113,7 @@ class ApplinksPanelOptionsGraphicUtils {
             visibility var(--popover-transition-duration) allow-discrete,
             display var(--popover-transition-duration) allow-discrete;
     /* Equivalent to
-    transition: all 0.7s allow-discrete; */
+    transition: all 0.4s allow-discrete; */
 
 
     }
@@ -228,7 +249,7 @@ export class ApplinksPanel {
         <div popover id="${this.#applinksPanelId}-popover"  >
         
         <div class="close-container">
-         <div role="button" autofocus id="${this.#applinksPanelId}-popover-close">Close</div>
+         <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
         </div>
        
         
