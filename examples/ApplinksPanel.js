@@ -19,6 +19,7 @@ class ApplinksPanelOptionsGraphicUtils {
        --popover-transition-duration: 0.1s;
     }
     #${id}-wrapper {
+    
         width: 40px;
         height: 40px;
         background-color: lightgray;
@@ -63,28 +64,35 @@ class ApplinksPanelOptionsGraphicUtils {
         
     }
     #${id}-popover {
+        
         padding: 0;
-        border-radius: 5px;
+        border-radius: 7px;
         box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
         border: 0px solid rgba(0, 0, 0, 0.2);
         background-color: #FAF9F6;
         font-size: 0.9rem;
         font-family: sans-serif;
-        width: 200px;
+        width: 200px; 
+        position: absolute;
+        left: 15px;
+        top: 50px;
         overflow: hidden;
        
        #${id}-popover-login-name {
+         padding: 0px 20px;
          font-weight: bold;
        }
         .applinks-panel-popover-content {
                 padding 0;
+                padding-bottom: 10px;
                 width: 100%;
                 display: flex;
                 flex-direction: column;
                 align-items: start;
                 justify-content: center;
+             
                 span {
-                    font-size: 1.2rem;
+                   
                     margin-bottom: 10px;
                 }
                 .applinks-panel-menu {
@@ -109,6 +117,13 @@ class ApplinksPanelOptionsGraphicUtils {
                             background-color: #f0f0f0;
                         }
                         div {
+                            display: flex;
+                            flex-direction: row;
+                            gap: 10px;
+                            align-items: center;
+                            justify-content: start;
+                            gap 10px;
+                            padding: 0 20px ;
                         }
                     }
                 }
@@ -116,10 +131,11 @@ class ApplinksPanelOptionsGraphicUtils {
         }
         .close-container{
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
-            padding-bottom: 10px;
+            padding-bottom: 0px; 
             div.close-container-button {
+                margin : 5px;
                 padding: 5px;
                 cursor: pointer;
                 width: 20px;
@@ -145,15 +161,20 @@ class ApplinksPanelOptionsGraphicUtils {
     
     
 #${id}-popover[popover]:popover-open {
+
     opacity: 1;
     transform: scale(1);
+
+}
+body [popover] {
+    inset:unset;
 }
 
 #${id}-popover[popover] {
 
-
+ 
     /* Final state of the exit animation */
-    opacity: 0;
+    opacity: 0; 
     transform: scale(.8);
 
     transition:
@@ -289,40 +310,45 @@ export class ApplinksPanel {
     }
 
     #addCSS = (css) => {
-        // document.head.appendChild(document.createElement('style')).innerHTML = css;
-        const sheet = new CSSStyleSheet();
-        sheet.replace(css);
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+        document.head.appendChild(document.createElement('style')).innerHTML = css;
+
     };
 
     #createPanelElement() {
         const element = document.createElement('div');
 
         const innerHtml = `
-        <div   id="${this.#applinksPanelId}-popover"  style="position:fixed; top:0px" >
+ 
+        <div id="${this.#applinksPanelId}-wrapper" >
+            <div popover  id="${this.#applinksPanelId}-popover"    >
         
             <div class="close-container">
+             <div> <div id="${this.#applinksPanelId}-popover-login-name"> chenpeleg </div> </div>
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             </div>
            
             <div class="applinks-panel-popover-content"> 
         
-                <span> <span id="${this.#applinksPanelId}-popover-login-name"> chenpeleg </span> </span>
+               
                 
                 <div class="applinks-panel-menu">
-                <div class="applinks-panel-menu-item"> <div> Logout </div> </div>
-                <div class="applinks-panel-menu-item">  <div>Settings</div> </div>
-                <div class="applinks-panel-menu-item"> <div> Support </div> </div>
+                <div class="applinks-panel-menu-item">  <div> ${ApplinksPanelOptionsGraphicUtils.settingsIcon} Settings</div> </div>
+                <div class="applinks-panel-menu-item"> <div> ${ApplinksPanelOptionsGraphicUtils.helpIcon} Support </div> </div>
+                <div class="applinks-panel-menu-item"> <div> ${ApplinksPanelOptionsGraphicUtils.logoutIcon} Logout </div> </div>
                 </div>
             </div>
-        </div>`;
-        const moreInnerHtml = `
-        <div id="${this.#applinksPanelId}-wrapper" >
-        <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" popovertarget="${this.#applinksPanelId}-popover">
+        </div> 
+         <button style="background-color: transparent" popovertarget="${this.#applinksPanelId}-popover" popovertargetaction="toggle">
+        <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" >
             <div id="${this.#applinksPanelId}-unloged-user"  
             class="${this.#applinksPanelId}-main-icon active" style="display: flex">
+           
+            
+
             ${ApplinksPanelOptionsGraphicUtils.userIcon}
+           
             </div>
+           
             <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
               ${ApplinksPanelOptionsGraphicUtils.cloudUpdateIcon}
@@ -341,6 +367,7 @@ export class ApplinksPanel {
             </div>
         
         </div>
+          </button>
         </div>`;
         element.innerHTML = innerHtml;
         document.body.appendChild(element);
@@ -356,10 +383,10 @@ export class ApplinksPanel {
         mainElement?.addEventListener('click', (ev) => {
             if (this.#status === 'not-logged-in') {
                 // @ts-ignore
-                popover.showPopover();
+                // popover.showPopover();
             }
             // @ts-ignore
-            popover.showPopover();
+            // popover.showPopover();
             console.log('click', ev);
         });
         popover.addEventListener('close', (ev) => {
