@@ -1,4 +1,5 @@
 //@ts-check
+import {ApplinksPanel} from '../examples/ApplinksPanel.js';
 
 /**
  * @typedef UserData
@@ -18,14 +19,17 @@
  * @property  { string } user_id
  */
 
-import {ApplinksPanel} from '../examples/ApplinksPanel.js';
-
 /**
  * @typedef LoginData
  * @property  { UserData } userData
  * @property { RecordData= } recordData
  */
 
+/**
+ * @typedef ApplinksClientOptions
+ * @property { boolean } useDefaultPanel
+ * @property { boolean } useLocalStorage
+ */
 export class APPLinkUtils {
     static #configs = {
         baseUrl: 'https://apps-links.web.app',
@@ -33,6 +37,7 @@ export class APPLinkUtils {
         userHelpHtmlPath: '#help',
         userAccountHtmlPath: '#account',
         recordsApiPath: 'api/appRecord',
+        logoutApiPath: 'api/logout',
         localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
     };
@@ -167,30 +172,31 @@ export class APPLinksClient {
         UserWasSet: 'UserWasSet',
         UserWasNotSet: 'UserWasNotSet',
     };
+    /** @type {ApplinksClientOptions  } */
+    #options;
     #newLoginWindowRef = null;
-    /**
-     *
-     * @type {ApplinksPanel | false}
-     */
+    /** @type {ApplinksPanel | false}     */
     #usePanel = false;
     /** @type {string} */ #appId;
     #util = APPLinkUtils;
-    /** @type {UserData} */ #UserData;
+    /** @type {UserData} */
+    #UserData;
 
     /**
      * @param {string} appId
-     * @param {{useDefaultPanel : boolean, loadUserDataFromStorage : boolean}} options
+     * @param {ApplinksClientOptions} options
      */
     constructor(
         appId,
         options = {
             useDefaultPanel: false,
-            loadUserDataFromStorage: true,
+            useLocalStorage: true,
         }
     ) {
         this.#appId = appId;
+        this.#options = options;
         this.#setUpPanel(options);
-        if (options.loadUserDataFromStorage) {
+        if (options.useLocalStorage) {
             this.tryToUpdateUserDataFromLocalStorage();
         }
     }
@@ -242,6 +248,13 @@ export class APPLinksClient {
         }
         this.#usePanel.setStatus(status);
     }
+
+    #loginActions = () => {
+        this.updatePanelStatus('logged-in');
+        if (this.#options.useLocalStorage) {
+            this.saveUserDataToLocalStorage();
+        }
+    };
 
     #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
         userSata.fullName && userSata.id && userSata.username && userSata.token;
@@ -317,7 +330,8 @@ export class APPLinksClient {
                     if (!data?.token) {
                         reject(msg);
                     }
-                    this.updatePanelStatus('logged-in');
+                    this.#loginActions();
+
                     resolve({
                         userData: this.#UserData,
                         recordData: appSaveData ? this.#util.serializeRecordData(appSaveData, appData) : undefined,
