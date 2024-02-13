@@ -60,8 +60,10 @@ class ApplinksPanelOptionsGraphicUtils {
     .${id}-main-icon.active:not(#${id}-cloud-complete) svg {
        opacity: 1;
     }
-    #${id}-unloged-user {
-        
+  
+    #${id}-user-initials {
+        color : black;
+        font-size: 1.2rem;
     }
     #${id}-popover {
         
@@ -220,20 +222,26 @@ class ApplinksPanelOptions {
     static PanelType = {
         classic: 'classic',
     };
+    static userIcon = {
+        'icon': 'icon', 'initials': 'initials'
+    };
 
     /**
      * @constructor
      * @param {{position :keyof ApplinksPanelOptions.Position,
      *  panelType: keyof ApplinksPanelOptions.PanelType
+     *  userIcon: keyof ApplinksPanelOptions.userIcon
      * }} props
      */
-    constructor({panelType, position} = {
+    constructor({panelType, position, userIcon} = {
         // @ts-ignore
         panelType: ApplinksPanelOptions.PanelType.classic, // @ts-ignore
-        position: ApplinksPanelOptions.Position.bottomLeft,
+        position: ApplinksPanelOptions.Position.bottomLeft, // @ts-ignore
+        userIcon: ApplinksPanelOptions.userIcon.initials,
     }) {
         this.position = position || ApplinksPanelOptions.Position.bottomLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
+        this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
     }
 }
 
@@ -265,8 +273,9 @@ export class ApplinksPanel {
     /**
      *
      * @param {AppLinkPanelStatusDisplay} status
+     * @param {UserData} [userData]
      */
-    setStatus(status) {
+    setStatus(status, userData = null) {
         const allIcons = [
 'user-logged', 'cloud-error', 'cloud-complete', 'cloud-update',
                           'unloged-user'
@@ -274,6 +283,9 @@ export class ApplinksPanel {
         const showOnly = (icon) => {
             allIcons.forEach((i) => {
                 const el = document.getElementById(`${this.#applinksPanelId}-${i}`);
+                if (!el) {
+                    return;
+                }
                 if (i === icon) {
                     el.style.display = 'flex';
                     setTimeout(() => {
@@ -306,7 +318,13 @@ export class ApplinksPanel {
                 showOnly('cloud-error');
                 break;
             case 'logged-in':
+
                 showOnly('user-logged');
+                const userInitials = document.getElementById(`${this.#applinksPanelId}-user-initials`);
+                const name = userData?.fullName || userData?.username || 'User';
+                const initials = name.split(' ').map((n) => n[0]).join('');
+                console.log('initials', userData);
+                userInitials.innerHTML = initials;
                 break;
             default:
         }
@@ -320,6 +338,10 @@ export class ApplinksPanel {
     #createPanelElement() {
         const element = document.createElement('div');
 
+        const userIcon = this.panelOptions.userIcon === 'initials' ?
+            `<div id="${this.#applinksPanelId}-user-initials"> </div>` :
+            ApplinksPanelOptionsGraphicUtils.userLoggedIcon;
+
         const innerHtml = `
  
         <div id="${this.#applinksPanelId}-wrapper" >
@@ -330,9 +352,7 @@ export class ApplinksPanel {
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             </div>
            
-            <div class="applinks-panel-popover-content"> 
-        
-               
+            <div class="applinks-panel-popover-content">  
                 
                 <div class="applinks-panel-menu">   
                 <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-account"> 
@@ -345,13 +365,10 @@ export class ApplinksPanel {
         </div> 
          <button style="background-color: transparent" popovertarget="${this.#applinksPanelId}-popover" popovertargetaction="toggle">
         <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" >
-            <div id="${this.#applinksPanelId}-unloged-user"  
-            class="${this.#applinksPanelId}-main-icon active" style="display: flex">
-           
             
-
-            ${ApplinksPanelOptionsGraphicUtils.userIcon}
-           
+            <div id="${this.#applinksPanelId}-unloged-user"  
+              class="${this.#applinksPanelId}-main-icon active" style="display: flex"> 
+              ${ApplinksPanelOptionsGraphicUtils.userIcon}
             </div>
            
             <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
@@ -368,7 +385,7 @@ export class ApplinksPanel {
             </div>
               <div id="${this.#applinksPanelId}-user-logged"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
-              ${ApplinksPanelOptionsGraphicUtils.userLoggedIcon}
+              ${userIcon}
             </div>
         
         </div>
@@ -393,9 +410,7 @@ export class ApplinksPanel {
             }
 
         });
-        popover.addEventListener('close', (ev) => {
-            console.log('close', ev);
-        });
+
         document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', (ev) => {
             // @ts-ignore
             popover.hidePopover();

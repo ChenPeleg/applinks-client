@@ -213,7 +213,10 @@ export class APPLinksClient {
         this.#options = options;
         this.#setUpPanel(options);
         if (options.useLocalStorage) {
-            this.tryToUpdateUserDataFromLocalStorage();
+            const result = this.tryToUpdateUserDataFromLocalStorage();
+            if (result.message === APPLinksClient.Messages.UserWasSet) {
+                this.updatePanelStatus('logged-in');
+            }
         }
     }
 
@@ -251,9 +254,9 @@ export class APPLinksClient {
     setUserData(userSata) {
         if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
             this.#UserData = { ...userSata };
+            this.updatePanelStatus('logged-in');
             return APPLinksClient.Messages.UserWasSet;
         }
-        this.updatePanelStatus('logged-in');
         return APPLinksClient.Messages.UserWasNotSet;
     }
 
@@ -265,7 +268,7 @@ export class APPLinksClient {
         if (!this.#usePanel) {
             return;
         }
-        this.#usePanel.setStatus(status);
+        this.#usePanel.setStatus(status, this.#UserData);
     }
 
     #loginActions = () => {
