@@ -13,7 +13,7 @@ class ApplinksPanelOptionsGraphicUtils {
 
     static getCss = (id) => `
     :root {
-       --popover-transition-duration: 0.2s;
+       --popover-transition-duration: 0.1s;
     }
     #${id}-wrapper {
         width: 40px;
@@ -64,6 +64,9 @@ class ApplinksPanelOptionsGraphicUtils {
         box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
         border: 0px solid rgba(0, 0, 0, 0.2);
         background-color: #FAF9F6;
+        font-size: 1rem;
+        font-family: sans-serif;
+        padding: 20px;
     }
     #${id}-popover-close {
     
@@ -223,7 +226,11 @@ export class ApplinksPanel {
 
         const innerHtml = `
         <div popover id="${this.#applinksPanelId}-popover"  >
-        <div role="button" autofocus id="${this.#applinksPanelId}-popover-close">Close</div>
+        
+        <div class="close-container">
+         <div role="button" autofocus id="${this.#applinksPanelId}-popover-close">Close</div>
+        </div>
+       
         
         <p>Logged in as <span id="${this.#applinksPanelId}-popover-login-name"></span> </p>
         
