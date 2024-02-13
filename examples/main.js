@@ -13,7 +13,7 @@ const updateUserUi = (userData /** @type { UserData }*/) => {
 
 const loginToServer = async () => {
     const { userData } = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
-    appLinkClient.saveUserDataToLocalStorage(userData);
+    //appLinkClient.saveUserDataToLocalStorage(userData);
     updateUserUi(userData);
 };
 const loadData = async () => {

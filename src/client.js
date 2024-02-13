@@ -52,6 +52,18 @@ export class APPLinkUtils {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.recordsApiPath}`;
     }
 
+    static get logoutUrl() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.logoutApiPath}`;
+    }
+
+    static get helpHtmlPath() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userHelpHtmlPath}`;
+    }
+
+    static get accountHtmlPath() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userAccountHtmlPath}`;
+    }
+
     /**
      * @param {{ baseUrl: string; userLoginHtmlPath: string; recordsApiPath: string; localStorageTokenKey: string; }} configs
      */
@@ -64,6 +76,10 @@ export class APPLinkUtils {
      */
     static storeUserDataToLocalStorage(userData) {
         localStorage.setItem(APPLinkUtils.#configs.localStorageUserData, JSON.stringify(userData));
+    }
+
+    static removeUserDataFromLocalStorage() {
+        localStorage.removeItem(APPLinkUtils.#configs.localStorageUserData);
     }
 
     static getUserDataFromLocalStorage() {
@@ -179,7 +195,7 @@ export class APPLinksClient {
     #usePanel = false;
     /** @type {string} */ #appId;
     #util = APPLinkUtils;
-    /** @type {UserData} */
+    /** @type {UserData | null} */
     #UserData;
 
     /**
@@ -220,10 +236,13 @@ export class APPLinksClient {
                 localStorage.setItem('user-data', JSON.stringify(userData));
                 break;
             case 'logout':
+                this.logoutClient().then();
                 break;
             case 'help':
+                window.open(this.#util.helpHtmlPath, '_blank');
                 break;
             case 'account':
+                window.open(this.#util.accountHtmlPath, '_blank');
                 break;
         }
     };
@@ -341,6 +360,17 @@ export class APPLinksClient {
             );
             doc.write(html);
         });
+    }
+
+    async logoutClient() {
+        this.#UserData = null;
+        this.updatePanelStatus('not-logged-in');
+        APPLinkUtils.removeUserDataFromLocalStorage();
+        const url = this.#util.logoutUrl;
+        const { status } = await this.#util.GetData(url, this.#UserData?.token);
+        if (status !== 200) {
+            throw new Error('logout failed');
+        }
     }
 
     saveUserDataToLocalStorage() {
