@@ -1,6 +1,6 @@
 import { APPLinksClient } from '../src/client.js';
 
-const appLinkClient = new APPLinksClient('app1Id');
+const appLinkClient = new APPLinksClient('app1Id', { useDefaultPanel: true });
 
 const updateUserUi = (userData /** @type { UserData }*/) => {
     const userState = document.body.querySelector('div.user-state');
@@ -13,14 +13,13 @@ const updateUserUi = (userData /** @type { UserData }*/) => {
 
 const loginToServer = async () => {
     const { userData } = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
-    console.log('userData', userData);
-    localStorage.setItem('user-data', JSON.stringify(userData));
+    appLinkClient.saveUserDataToLocalStorage(userData);
     updateUserUi(userData);
 };
 const loadData = async () => {
     const result = /** @type { RecordData }*/ await appLinkClient.loadSavedRecords();
     if (result?.app_data) {
-        const app_data = JSON.parse(result.app_data);
+        const app_data = result.app_data;
         if (app_data.dataText) {
             document.querySelector('#data-input').value = app_data.dataText;
         }
@@ -42,7 +41,7 @@ const checkLSForUSerData = () => {
     }
 };
 const userFromLS = checkLSForUSerData();
-console.log('userFromLS', userFromLS);
+
 if (appLinkClient.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
     updateUserUi(userFromLS);
 }

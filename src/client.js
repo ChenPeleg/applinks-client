@@ -18,6 +18,8 @@
  * @property  { string } user_id
  */
 
+import {ApplinksPanel} from '../examples/ApplinksPanel.js';
+
 /**
  * @typedef LoginData
  * @property  { UserData } userData
@@ -28,8 +30,10 @@ export class APPLinkUtils {
     static #configs = {
         baseUrl: 'https://apps-links.web.app',
         userLoginHtmlPath: '#app-login',
+        userHelpHtmlPath: '#help',
+        userAccountHtmlPath: '#account',
         recordsApiPath: 'api/appRecord',
-        localStorageTokenKey: 'app-links-user-data',
+        localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
     };
 
@@ -51,13 +55,24 @@ export class APPLinkUtils {
     }
 
     /**
+     * @param {any} userData
+     */
+    static storeUserDataToLocalStorage(userData) {
+        localStorage.setItem(APPLinkUtils.#configs.localStorageUserData, JSON.stringify(userData));
+    }
+
+    static getUserDataFromLocalStorage() {
+        return localStorage.getItem(APPLinkUtils.#configs.localStorageUserData);
+    }
+
+    /**
      *
      * @param {string} url
      * @param  {Record<string,any>} data
      * @param  {string} token
-     * @return {Promise<Record<string,any>>}
+     * @return { Promise<{ body: any; status: number; headers: Headers; }>}
      */
-    static async PostData(url = '', data = {}, token = null) {
+    static async PostData(url = '', data = {}, token) {
         const headers = {
             'Content-Type': 'application/json',
         };
@@ -70,17 +85,13 @@ export class APPLinkUtils {
             cache: 'no-cache', // credentials: 'same-origin',
             headers: headers,
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-            body: JSON.stringify(data), // body data type must match "Content-Type" header
+            body: JSON.stringify({ Data: data }),
         });
         return {
             body: await response.json(),
             status: response.status,
             headers: response.headers,
-        }; // parses
-        // JSON response
-        // into
-        // native
-        // JavaScript objects
+        };
     }
 
     /**
@@ -104,11 +115,11 @@ export class APPLinkUtils {
                 redirect: 'follow', // manual, *follow, error
                 referrerPolicy: 'no-referrer',
             });
-            console.log('response', response);
+
             const asJson = await response.json();
             return {
                 body: asJson,
-                status: 200, //response.status,
+                status: response.status,
                 headers: response.headers,
             };
         } catch (err) {
@@ -156,21 +167,60 @@ export class APPLinksClient {
         UserWasSet: 'UserWasSet',
         UserWasNotSet: 'UserWasNotSet',
     };
-
     #newLoginWindowRef = null;
-
+    /**
+     *
+     * @type {ApplinksPanel | false}
+     */
+    #usePanel = false;
     /** @type {string} */ #appId;
-
     #util = APPLinkUtils;
-
     /** @type {UserData} */ #UserData;
 
     /**
      * @param {string} appId
+     * @param {{useDefaultPanel : boolean, loadUserDataFromStorage : boolean}} options
      */
-    constructor(appId) {
+    constructor(
+        appId,
+        options = {
+            useDefaultPanel: false,
+            loadUserDataFromStorage: true,
+        }
+    ) {
         this.#appId = appId;
+        this.#setUpPanel(options);
+        if (options.loadUserDataFromStorage) {
+            this.tryToUpdateUserDataFromLocalStorage();
+        }
     }
+
+    get userStatus() {
+        return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
+    }
+
+    #setUpPanel = (/** @type {{ useDefaultPanel: any; }} */ options) => {
+        if (options.useDefaultPanel) {
+            this.#usePanel = new ApplinksPanel();
+            this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
+                this.#applinksClientPanelAction(action);
+        }
+    };
+
+    #applinksClientPanelAction = async (/** @type {"login" | "logout" | "help" | "account" } */ action) => {
+        switch (action) {
+            case 'login':
+                const { userData } = /** @type { UserData }*/ await this.LoginThroughAppLinks();
+                localStorage.setItem('user-data', JSON.stringify(userData));
+                break;
+            case 'logout':
+                break;
+            case 'help':
+                break;
+            case 'account':
+                break;
+        }
+    };
 
     /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
     setUserData(userSata) {
@@ -178,13 +228,26 @@ export class APPLinksClient {
             this.#UserData = { ...userSata };
             return APPLinksClient.Messages.UserWasSet;
         }
+        this.updatePanelStatus('logged-in');
         return APPLinksClient.Messages.UserWasNotSet;
+    }
+
+    /**
+     *
+     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in"} status
+     */
+    updatePanelStatus(status) {
+        if (!this.#usePanel) {
+            return;
+        }
+        this.#usePanel.setStatus(status);
     }
 
     #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
         userSata.fullName && userSata.id && userSata.username && userSata.token;
 
     async loadSavedRecords() {
+        this.updatePanelStatus('updating');
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot load record without user data');
         }
@@ -195,7 +258,17 @@ export class APPLinksClient {
                 appId: this.#appId || '',
             });
         const { body } = await this.#util.GetData(url, this.#UserData?.token);
+        this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
+    }
+
+    /**
+     * @param { Headers  } headers
+     */
+    async checkHeadersForAdditionalAction(headers) {
+        if (headers.get('x-action') === 'login') {
+            await this.LoginThroughAppLinks();
+        }
     }
 
     /**
@@ -205,8 +278,15 @@ export class APPLinksClient {
         if (!this.#validateUserData(this.#UserData)) {
             throw new Error('cannot save record without user data');
         }
-        const url = `${this.#util.recordUrl}/${this.#appId}/`;
+        this.updatePanelStatus('updating');
+        const url =
+            `${this.#util.recordUrl}?` +
+            new URLSearchParams({
+                appId: this.#appId || '',
+            });
         const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        await this.checkHeadersForAdditionalAction(headers);
+        this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
     }
 
@@ -237,6 +317,7 @@ export class APPLinksClient {
                     if (!data?.token) {
                         reject(msg);
                     }
+                    this.updatePanelStatus('logged-in');
                     resolve({
                         userData: this.#UserData,
                         recordData: appSaveData ? this.#util.serializeRecordData(appSaveData, appData) : undefined,
@@ -246,5 +327,26 @@ export class APPLinksClient {
             );
             doc.write(html);
         });
+    }
+
+    saveUserDataToLocalStorage() {
+        this.#util.storeUserDataToLocalStorage(this.#UserData);
+    }
+
+    tryToUpdateUserDataFromLocalStorage() {
+        const checkLSForUSerData = () => {
+            const userDAtaFromLS = this.#util.getUserDataFromLocalStorage();
+            if (!userDAtaFromLS?.length) {
+                return false;
+            } else {
+                return JSON.parse(userDAtaFromLS);
+            }
+        };
+        const userFromLS = checkLSForUSerData();
+
+        if (this.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
+            return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
+        }
+        return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
     }
 }
