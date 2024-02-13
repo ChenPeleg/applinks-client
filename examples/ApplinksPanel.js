@@ -72,10 +72,10 @@ class ApplinksPanelOptionsGraphicUtils {
         background-color: #FAF9F6;
         font-size: 0.9rem;
         font-family: sans-serif;
-        width: 200px; 
+        width: 180px; 
         position: absolute;
-        left: 15px;
-        top: 50px;
+        left: 6px;
+        top: 45px;
         overflow: hidden;
        
        #${id}-popover-login-name {
@@ -257,7 +257,10 @@ export class ApplinksPanel {
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId));
     }
 
-    actionCallBack = () => {};
+    actionCallBack = (action) => {};
+    #commitAction = (action) => {
+        this.actionCallBack(action);
+    };
 
     /**
      *
@@ -331,10 +334,12 @@ export class ApplinksPanel {
         
                
                 
-                <div class="applinks-panel-menu">
-                <div class="applinks-panel-menu-item">  <div> ${ApplinksPanelOptionsGraphicUtils.settingsIcon} Settings</div> </div>
-                <div class="applinks-panel-menu-item"> <div> ${ApplinksPanelOptionsGraphicUtils.helpIcon} Support </div> </div>
-                <div class="applinks-panel-menu-item"> <div> ${ApplinksPanelOptionsGraphicUtils.logoutIcon} Logout </div> </div>
+                <div class="applinks-panel-menu">   
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-account"> 
+                 <div> ${ApplinksPanelOptionsGraphicUtils.settingsIcon} Settings</div> </div>
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-help"> 
+                <div> ${ApplinksPanelOptionsGraphicUtils.helpIcon} Support </div> </div>
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-logout"> <div> ${ApplinksPanelOptionsGraphicUtils.logoutIcon} Logout </div> </div>
                 </div>
             </div>
         </div> 
@@ -382,12 +387,11 @@ export class ApplinksPanel {
 
         mainElement?.addEventListener('click', (ev) => {
             if (this.#status === 'not-logged-in') {
-                // @ts-ignore
-                // popover.showPopover();
+                ev.preventDefault();
+                ev.stopPropagation();
+                this.actionCallBack('login');
             }
-            // @ts-ignore
-            // popover.showPopover();
-            console.log('click', ev);
+
         });
         popover.addEventListener('close', (ev) => {
             console.log('close', ev);
@@ -396,6 +400,16 @@ export class ApplinksPanel {
             // @ts-ignore
             popover.hidePopover();
         });
+
+        ['account', 'help', 'logout'].forEach((id) => {
+            document.querySelector(`#${this.#applinksPanelId}-button-${id}`).addEventListener('click', (ev) => {
+                this.#commitAction(id);
+                // @ts-ignore
+                popover.hidePopover();
+            });
+
+        });
+
 
         setTimeout(() => {
             // @ts-ignore
