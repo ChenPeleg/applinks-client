@@ -7,6 +7,7 @@ import {ApplinksPanel} from '../examples/ApplinksPanel.js';
  * @property  { string } fullName
  * @property  { string } id
  * @property  { string } token
+ * @property  { string } refreshToken
  */
 
 /**
@@ -33,9 +34,9 @@ import {ApplinksPanel} from '../examples/ApplinksPanel.js';
 export class APPLinkUtils {
     static #configs = {
         baseUrl: 'https://apps-links.web.app',
-        userLoginHtmlPath: '#app-login',
-        userHelpHtmlPath: '#help',
-        userAccountHtmlPath: '#account',
+        userLoginHtmlPath: 'site/app-login',
+        userHelpHtmlPath: 'site/help',
+        userAccountHtmlPath: 'site/account',
         recordsApiPath: 'api/appRecord',
         logoutApiPath: 'api/logout',
         localStorageUserData: 'app-links-user-data',
@@ -151,14 +152,16 @@ export class APPLinkUtils {
     /**
      * @param {{ Email: any; FullName: any; UID: any; }} userData
      * @param {any} TokenKey
+     * @param {string | null} refreshToken
      * @returns {UserData}
      */
-    static serializeUserData(userData, TokenKey) {
+    static serializeUserData(userData, TokenKey, refreshToken) {
         return {
             username: userData.Email,
             fullName: userData.FullName,
             id: userData.UID,
             token: TokenKey,
+            refreshToken: refreshToken,
         };
     }
 
@@ -339,11 +342,12 @@ export class APPLinksClient {
             newLoginWindow.addEventListener(
                 'message',
                 (msg) => {
+                    console.log('message from iframe', msg.data);
                     const data = msg.data;
-                    const { userData, appData, appSaveData, token, clientConfig } = data;
+                    const { userData, appData, appSaveData, token, clientConfig, refreshToken } = data;
                     this.#util.setConfigs(clientConfig);
 
-                    this.#UserData = this.#util.serializeUserData(userData, token);
+                    this.#UserData = this.#util.serializeUserData(userData, token, refreshToken);
                     if (this.#newLoginWindowRef) {
                         this.#newLoginWindowRef.close();
                         this.#newLoginWindowRef = null;
