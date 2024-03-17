@@ -49,6 +49,19 @@ export class APPLinkUtils {
 
     constructor() {}
 
+    static get AuthError() {
+        class AuthError extends Error {
+            /**
+             * @param {string} message
+             */
+            constructor(message) {
+                super(message);
+            }
+        }
+
+        return AuthError;
+    }
+
     static get htmlLoginUrl() {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userLoginHtmlPath}`;
     }
@@ -240,6 +253,9 @@ export class APPLinksClient {
         UserWasSet: 'UserWasSet',
         UserWasNotSet: 'UserWasNotSet',
     };
+
+    static AuthError = APPLinkUtils.AuthError;
+
     /** @type {ApplinksClientOptions  } */
     #options;
     #newLoginWindowRef = null;
@@ -264,6 +280,7 @@ export class APPLinksClient {
         this.#appId = appId;
         this.#options = options;
         this.#setUpPanel(options);
+
         if (options.useLocalStorage) {
             const result = this.tryToUpdateUserDataFromLocalStorage();
             if (result.message === APPLinksClient.Messages.UserWasSet) {
@@ -387,7 +404,7 @@ export class APPLinksClient {
                 return this.savedRecord(dataToSave);
             }
             this.handleAuthFailure();
-            throw new Error('cannot load record without user data; auth failed');
+            throw new APPLinksClient.AuthError('cannot save record without user data; auth failed');
         }
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
