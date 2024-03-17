@@ -33,14 +33,16 @@ import {ApplinksPanel} from '../examples/ApplinksPanel.js';
  */
 export class APPLinkUtils {
     static #configs = {
-        baseUrl: 'https://apps-links.web.app',
+        baseUrl: 'https://apps-links.web.app', // 'http://localhost:5173', https://apps-links.web.app
         userLoginHtmlPath: 'site/app-login',
-        userHelpHtmlPath: 'site/help',
+        userHelpHtmlPath: 'site/support',
         userAccountHtmlPath: 'site/account',
         recordsApiPath: 'api/appRecord',
         logoutApiPath: 'api/logout',
+        refreshApiPath: 'api/refreshToken',
         localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
+        tokenSoonToExpireHeader: 'X-token-soon-to-expire',
     };
 
     constructor() {}
@@ -88,6 +90,13 @@ export class APPLinkUtils {
     }
 
     /**
+     * @param {Headers} headers
+     */
+    static hasTokenExpiryHeader(headers) {
+        return !!headers.get(APPLinkUtils.#configs.tokenSoonToExpireHeader);
+    }
+
+    /**
      *
      * @param {string} url
      * @param  {Record<string,any>} data
@@ -109,6 +118,7 @@ export class APPLinkUtils {
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify({ Data: data }),
         });
+
         return {
             body: await response.json(),
             status: response.status,
@@ -137,7 +147,7 @@ export class APPLinkUtils {
                 redirect: 'follow', // manual, *follow, error
                 referrerPolicy: 'no-referrer',
             });
-
+            APPLinkUtils.hasTokenExpiryHeader(response.headers);
             const asJson = await response.json();
             return {
                 body: asJson,
@@ -147,6 +157,39 @@ export class APPLinkUtils {
         } catch (err) {
             throw new Error('cannot get data' + err.toString());
         }
+    }
+
+    /**
+     *
+     * @param {string} url
+     * @param  {string} refreshToken
+     * @param  {string} token
+     * @return { Promise<{ body: any; status: number; headers: Headers; }>}
+     */
+    static async RequestTokenRefresh(url = '', refreshToken, token) {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = 'Token ' + token;
+        }
+        const response = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache', // credentials: 'same-origin',
+            headers: headers,
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify({
+                applinksAuthToken: token,
+                refreshToken: refreshToken,
+            }),
+        });
+
+        return {
+            body: await response.json(),
+            status: response.status,
+            headers: response.headers,
+        };
     }
 
     /**
@@ -306,6 +349,9 @@ export class APPLinksClient {
     async checkHeadersForAdditionalAction(headers) {
         if (headers.get('x-action') === 'login') {
             await this.LoginThroughAppLinks();
+        } else if (APPLinkUtils.hasTokenExpiryHeader(headers)) {
+            console.log('token soon to expire');
+            // this.logoutClient().then();
         }
     }
 
@@ -322,7 +368,11 @@ export class APPLinksClient {
             new URLSearchParams({
                 appId: this.#appId || '',
             });
-        const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        if (status === 440) {
+            // await this.r();
+            // return this.savedRecord(dataToSave);
+        }
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
@@ -334,6 +384,7 @@ export class APPLinksClient {
             <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
                 this.#util.htmlLoginUrl
             }"></iframe> </div>`;
+        console.log('html', this.#util.htmlLoginUrl);
         const newLoginWindow = window.open('', '', 'width=500,height=700');
         this.#newLoginWindowRef = newLoginWindow;
         const doc = newLoginWindow.document;
@@ -342,7 +393,6 @@ export class APPLinksClient {
             newLoginWindow.addEventListener(
                 'message',
                 (msg) => {
-                    console.log('message from iframe', msg.data);
                     const data = msg.data;
                     const { userData, appData, appSaveData, token, clientConfig, refreshToken } = data;
                     this.#util.setConfigs(clientConfig);
@@ -399,5 +449,17 @@ export class APPLinksClient {
             return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
         }
         return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
+    }
+
+    requestTokenRefresh() {
+        console.log('requestTokenRefresh');
+
+        // .post(
+        //         'https://apps-links.web.app/api/refreshToken',
+        //         {
+        //             applinksAuthToken: selectedAppData?.token || '',
+        //             refreshToken: refreshToken || '',
+        //         }
+        //     )
     }
 }
