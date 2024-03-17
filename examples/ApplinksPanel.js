@@ -32,6 +32,7 @@ class ApplinksPanelOptionsGraphicUtils {
         top:0;
         border-radius: 0 0 2px 0 ;
     }
+    
     #${id}-main-user-button {
         display: flex;
         justify-content: center;
@@ -199,6 +200,49 @@ body [popover] {
         transform: scale(0);
     }
     }
+    #${id}-message-info {
+      position: fixed;
+      left: 45px;
+      padding: 0;
+      border-radius: 7px;
+      box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
+      border: 0px solid rgba(0, 0, 0, 0.2);
+      background-color: #FAF9F6;
+      font-size: 0.9rem;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: row;
+      .message-text {
+        padding: 10px 20px;
+      }
+      
+      .close-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0px; 
+            div.close-container-button {
+                margin : 5px;
+                padding: 5px;
+                cursor: pointer;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 50%;
+                transition: background-color 0.1s;
+                background-color: transparent;
+                transition-delay: 0s;
+                &:hover {
+                   transition: none;
+                   transition-delay: 0s;
+                   background-color: #f0f0f0;
+                }
+            }
+        }
+      
+    }
 
     `;
 }
@@ -299,7 +343,7 @@ export class ApplinksPanel {
         };
 
         this.#status = status;
-        status = 'error-please-relogin';
+        // status = 'error-please-relogin';
         switch (status) {
             case 'not-logged-in':
                 showOnly('unloged-user');
@@ -335,6 +379,13 @@ export class ApplinksPanel {
                 break;
             case 'error-please-relogin':
                 showOnly('cloud-error');
+                const messageElement = document.querySelector(`#${this.#applinksPanelId}-message-info`);
+                // @ts-ignore
+                messageElement.style.display = 'flex';
+                setTimeout(() => {
+                    this.setStatus('not-logged-in');
+                }, 1000);
+
                 break;
             default:
         }
@@ -355,10 +406,10 @@ export class ApplinksPanel {
         const innerHtml = `
  
         <div id="${this.#applinksPanelId}-wrapper" >
-            <div popover  id="${this.#applinksPanelId}-popover"    >
+            <div popover  id="${this.#applinksPanelId}-popover">
         
             <div class="close-container">
-             <div> <div id="${this.#applinksPanelId}-popover-login-name"> chenpeleg </div> </div>
+             <div> <div id="${this.#applinksPanelId}-popover-login-name"> Logged in </div> </div>
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             </div>
            
@@ -400,6 +451,14 @@ export class ApplinksPanel {
         
         </div>
           </button>
+          <div id="${this.#applinksPanelId}-message-info" class="${this.#applinksPanelId}-message-info"> 
+         <div class="message-text" id="${this.#applinksPanelId}-message-content"> You're not connected. Please login </div>
+           <div class="close-container"> 
+             <div role="button" class="close-container-button" id="${this.#applinksPanelId}-message-close">
+${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
+
+            </div>
+          </div>
         </div>`;
         element.innerHTML = innerHtml;
         document.body.appendChild(element);
@@ -411,6 +470,7 @@ export class ApplinksPanel {
     #attachHandlers = () => {
         const mainElement = document.querySelector(`#${this.#applinksPanelId}-wrapper`);
         const popover = document.querySelector(`#${this.#applinksPanelId}-popover`);
+        const messageElement = document.querySelector(`#${this.#applinksPanelId}-message-info`);
 
         mainElement?.addEventListener('click', (ev) => {
             if (this.#status === 'not-logged-in') {
@@ -424,6 +484,10 @@ export class ApplinksPanel {
         document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', (ev) => {
             // @ts-ignore
             popover.hidePopover();
+        });
+        document.querySelector(`#${this.#applinksPanelId}-message-close`).addEventListener('click', (ev) => {
+            // @ts-ignore
+            messageElement.style.display = 'none';
         });
 
         ['account', 'help', 'logout'].forEach((id) => {
