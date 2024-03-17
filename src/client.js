@@ -384,7 +384,7 @@ export class APPLinksClient {
         const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         if (status === 440) {
             if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
-                return this.loadSavedRecords();
+                return this.savedRecord(dataToSave);
             }
             this.handleAuthFailure();
             throw new Error('cannot load record without user data; auth failed');
