@@ -35,6 +35,10 @@ const saveData = async () => {
     const result = /** @type { any }*/ await appLinkClient.savedRecord(data);
     console.log('load Data', result);
 };
+const refreshToken = async () => {
+    const result = await appLinkClient.requestTokenRefresh();
+    console.log('refreshToken', result);
+};
 const checkLSForUSerData = () => {
     const userDAtaFromLS = localStorage.getItem('user-data');
     if (!userDAtaFromLS?.length) {
@@ -51,3 +55,4 @@ if (appLinkClient.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet
 window.loginToServer = loginToServer;
 window.loadData = loadData;
 window.saveData = saveData;
+window.refreshToken = refreshToken;

@@ -44,6 +44,8 @@ export class APPLinkUtils {
         localStorageConfigData: 'app-links-config-data',
         tokenSoonToExpireHeader: 'X-token-soon-to-expire',
     };
+    static Success = 'success';
+    static Error = 'error';
 
     constructor() {}
 
@@ -61,6 +63,10 @@ export class APPLinkUtils {
 
     static get helpHtmlPath() {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userHelpHtmlPath}`;
+    }
+
+    static get refreshUrl() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.refreshApiPath}`;
     }
 
     static get accountHtmlPath() {
@@ -338,7 +344,14 @@ export class APPLinksClient {
             new URLSearchParams({
                 appId: this.#appId || '',
             });
-        const { body } = await this.#util.GetData(url, this.#UserData?.token);
+        const { body, status, headers } = await this.#util.GetData(url, this.#UserData?.token);
+        if (status === 440) {
+            if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
+                return this.loadSavedRecords();
+            }
+            this.handleAuthFailure();
+            throw new Error('cannot load record without user data; auth failed');
+        }
         this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
     }
@@ -370,8 +383,11 @@ export class APPLinksClient {
             });
         const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         if (status === 440) {
-            // await this.r();
-            // return this.savedRecord(dataToSave);
+            if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
+                return this.loadSavedRecords();
+            }
+            this.handleAuthFailure();
+            throw new Error('cannot load record without user data; auth failed');
         }
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
@@ -451,15 +467,23 @@ export class APPLinksClient {
         return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
     }
 
-    requestTokenRefresh() {
-        console.log('requestTokenRefresh');
+    async requestTokenRefresh() {
+        const { status, body } = await this.#util.RequestTokenRefresh(
+            this.#util.refreshUrl,
+            this.#UserData?.refreshToken || '',
+            this.#UserData?.token || ''
+        );
+        if (status === 200 && body.token) {
+            this.#UserData.token = body.token;
+            this.#UserData.refreshToken = body.refreshToken;
+            this.saveUserDataToLocalStorage();
+            return APPLinkUtils.Success;
+        } else {
+            return APPLinkUtils.Error;
+        }
+    }
 
-        // .post(
-        //         'https://apps-links.web.app/api/refreshToken',
-        //         {
-        //             applinksAuthToken: selectedAppData?.token || '',
-        //             refreshToken: refreshToken || '',
-        //         }
-        //     )
+    handleAuthFailure() {
+        this.updatePanelStatus('not-logged-in');
     }
 }
