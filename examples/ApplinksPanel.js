@@ -204,7 +204,7 @@ body [popover] {
 }
 
 /**
- * @typedef  {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in"}  AppLinkPanelStatusDisplay
+ * @typedef  {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"}  AppLinkPanelStatusDisplay
  */
 
 /**
@@ -299,6 +299,7 @@ export class ApplinksPanel {
         };
 
         this.#status = status;
+        status = 'error-please-relogin';
         switch (status) {
             case 'not-logged-in':
                 showOnly('unloged-user');
@@ -326,8 +327,14 @@ export class ApplinksPanel {
                 }
 
                 const name = userData?.fullName || userData?.username || 'User';
-                const initials = name.split(' ').map((n) => n[0]).join('');
+                const initials = name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('');
                 userInitials.innerHTML = initials;
+                break;
+            case 'error-please-relogin':
+                showOnly('cloud-error');
                 break;
             default:
         }

@@ -331,7 +331,7 @@ export class APPLinksClient {
 
     /**
      *
-     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in"} status
+     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"} status
      */
     updatePanelStatus(status) {
         if (!this.#usePanel) {
