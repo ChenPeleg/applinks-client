@@ -362,6 +362,7 @@ export class APPLinksClient {
                 appId: this.#appId || '',
             });
         const { body, status, headers } = await this.#util.GetData(url, this.#UserData?.token);
+
         if (status === 440) {
             if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
                 return this.loadSavedRecords();
@@ -370,6 +371,7 @@ export class APPLinksClient {
             throw new Error('cannot load record without user data; auth failed');
         }
         this.updatePanelStatus('updateComplete');
+
         return this.#util.serializeRecordData(body);
     }
 
@@ -485,6 +487,7 @@ export class APPLinksClient {
     }
 
     async requestTokenRefresh() {
+        console.log('refreshing token');
         const { status, body } = await this.#util.RequestTokenRefresh(
             this.#util.refreshUrl,
             this.#UserData?.refreshToken || '',
@@ -501,6 +504,6 @@ export class APPLinksClient {
     }
 
     handleAuthFailure() {
-        this.updatePanelStatus('not-logged-in');
+        this.updatePanelStatus('error-please-relogin');
     }
 }

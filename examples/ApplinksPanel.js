@@ -210,7 +210,7 @@ body [popover] {
       background-color: #FAF9F6;
       font-size: 0.9rem;
       font-family: sans-serif;
-      display: flex;
+      display: none;
       flex-direction: row;
       .message-text {
         padding: 10px 20px;
@@ -486,6 +486,8 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             popover.hidePopover();
         });
         document.querySelector(`#${this.#applinksPanelId}-message-close`).addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
             // @ts-ignore
             messageElement.style.display = 'none';
         });
