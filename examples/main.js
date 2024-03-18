@@ -5,6 +5,9 @@ const appLinkClient = new APPLinksClient('app1Id', {
     useLocalStorage: true,
 });
 
+appLinkClient.setClientActionCallBack = (action) => {
+    console.log(action.type);
+};
 const updateUserUi = (userData /** @type { UserData }*/) => {
     const userState = document.body.querySelector('div.user-state');
     userState.innerHTML = `Hello, ${userData.fullName} ${userData.id} `;
@@ -33,10 +36,10 @@ const loadData = async () => {
 const saveData = async () => {
     const data = { dataText: document.querySelector('#data-input').value };
     const result = /** @type { any }*/ await appLinkClient.savedRecord(data);
-    console.log('load Data', result);
+    console.log('save Data', result);
 };
 const refreshToken = async () => {
-    const result = await appLinkClient.requestTokenRefresh();
+    const result = await appLinkClient.innerMethods.requestTokenRefresh();
     console.log('refreshToken', result);
 };
 const checkLSForUSerData = () => {
@@ -49,7 +52,7 @@ const checkLSForUSerData = () => {
 };
 const userFromLS = checkLSForUSerData();
 
-if (appLinkClient.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
+if (appLinkClient.innerMethods.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
     updateUserUi(userFromLS);
 }
 window.loginToServer = loginToServer;
