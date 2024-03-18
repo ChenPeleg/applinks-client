@@ -296,9 +296,9 @@ export class APPLinksClient {
         this.#setUpPanel(options);
 
         if (options.useLocalStorage) {
-            const result = this.tryToUpdateUserDataFromLocalStorage();
+            const result = this.#tryToUpdateUserDataFromLocalStorage();
             if (result.message === APPLinksClient.Messages.UserWasSet) {
-                this.updatePanelStatus('logged-in');
+                this.#updatePanelStatus('logged-in');
             }
         }
     }
@@ -318,76 +318,9 @@ export class APPLinksClient {
         return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
     }
 
-    /**
-     * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
-     * @return {*}
-     */
-    #clientActionCallBack = (action) => void 0;
-
-    #setUpPanel = (/** @type {{ useDefaultPanel: any; }} */ options) => {
-        if (options.useDefaultPanel) {
-            this.#usePanel = new ApplinksPanel();
-            this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
-                this.#applinksClientPanelAction(action);
-        }
-    };
-
-    #applinksClientPanelAction = async (/** @type {"login" | "logout" | "help" | "account" } */ action) => {
-        switch (action) {
-            case 'login':
-                const { userData } = /** @type { UserData }*/ await this.LoginThroughAppLinks();
-                localStorage.setItem('user-data', JSON.stringify(userData));
-                break;
-            case 'logout':
-                this.logoutClient().then();
-                break;
-            case 'help':
-                window.open(this.#util.helpHtmlPath, '_blank');
-                break;
-            case 'account':
-                window.open(this.#util.accountHtmlPath, '_blank');
-                break;
-        }
-    };
-
-    /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
-    setUserData(userSata) {
-        if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
-            this.#UserData = { ...userSata };
-            this.updatePanelStatus('logged-in');
-            return APPLinksClient.Messages.UserWasSet;
-        }
-        return APPLinksClient.Messages.UserWasNotSet;
-    }
-
-    /**
-     *
-     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"} status
-     */
-    updatePanelStatus(status) {
-        if (!this.#usePanel) {
-            return;
-        }
-        this.#usePanel.setStatus(status, this.#UserData);
-    }
-
-    #loginActions = () => {
-        this.emitAction({
-            type: APPLinksClient.ApplinksClientEvents.UserLoggedIn,
-            data: this.#UserData,
-        });
-        this.updatePanelStatus('logged-in');
-        if (this.#options.useLocalStorage) {
-            this.saveUserDataToLocalStorage();
-        }
-    };
-
-    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
-        userSata.fullName && userSata.id && userSata.username && userSata.token;
-
     async loadSavedRecords() {
         if (!this.#validateUserData(this.#UserData)) {
-            this.emitAction({
+            this.#emitAction({
                 type: APPLinksClient.ApplinksClientEvents.UserRecordLoadFailed,
                 data: this.#UserData,
             });
@@ -398,7 +331,7 @@ export class APPLinksClient {
                     : 'User is not logged in; cannot load record without user data'
             );
         }
-        this.updatePanelStatus('updating');
+        this.#updatePanelStatus('updating');
         const url =
             `${this.#util.recordUrl}?` +
             new URLSearchParams({
@@ -407,21 +340,21 @@ export class APPLinksClient {
         const { body, status, headers } = await this.#util.GetData(url, this.#UserData?.token);
 
         if (status === 440) {
-            if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
-                this.emitAction({
+            if ((await this.#requestTokenRefresh()) === APPLinkUtils.Success) {
+                this.#emitAction({
                     type: APPLinksClient.ApplinksClientEvents.UserRecordLoaded,
                     data: { body, status, headers },
                 });
                 return this.loadSavedRecords();
             }
-            this.handleAuthFailure();
+            this.#handleAuthFailure();
 
             throw new Error('cannot load record without user data; auth failed');
         }
 
         await this.checkHeadersForAdditionalAction(headers);
-        this.updatePanelStatus('updateComplete');
-        this.emitAction({
+        this.#updatePanelStatus('updateComplete');
+        this.#emitAction({
             type: APPLinksClient.ApplinksClientEvents.UserRecordLoaded,
             data: { body, status, headers },
         });
@@ -436,7 +369,7 @@ export class APPLinksClient {
         if (headers.get('x-action') === 'login') {
             await this.LoginThroughAppLinks();
         } else if (APPLinkUtils.hasTokenExpiryHeader(headers)) {
-            this.requestTokenRefresh().then();
+            this.#requestTokenRefresh().then();
         }
     }
 
@@ -445,7 +378,7 @@ export class APPLinksClient {
      */
     async savedRecord(dataToSave) {
         if (!this.#validateUserData(this.#UserData)) {
-            this.emitAction({
+            this.#emitAction({
                 type: APPLinksClient.ApplinksClientEvents.UserRecordUpdateFailed,
                 data: this.#UserData,
             });
@@ -457,7 +390,7 @@ export class APPLinksClient {
             );
         }
 
-        this.updatePanelStatus('updating');
+        this.#updatePanelStatus('updating');
         const url =
             `${this.#util.recordUrl}?` +
             new URLSearchParams({
@@ -465,14 +398,14 @@ export class APPLinksClient {
             });
         const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
         if (status === 440) {
-            if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
+            if ((await this.#requestTokenRefresh()) === APPLinkUtils.Success) {
                 return this.savedRecord(dataToSave);
             }
-            this.handleAuthFailure();
+            this.#handleAuthFailure();
             throw new APPLinksClient.AuthError('cannot save record without user data; auth failed');
         }
         await this.checkHeadersForAdditionalAction(headers);
-        this.updatePanelStatus('updateComplete');
+        this.#updatePanelStatus('updateComplete');
         return body;
     }
 
@@ -518,7 +451,7 @@ export class APPLinksClient {
     }
 
     async logoutClient() {
-        this.updatePanelStatus('not-logged-in');
+        this.#updatePanelStatus('not-logged-in');
         APPLinkUtils.removeUserDataFromLocalStorage();
         const url = this.#util.logoutUrl;
         const { status } = await this.#util.PostData(
@@ -528,24 +461,91 @@ export class APPLinksClient {
         );
 
         if (status !== 200) {
-            this.emitAction({
+            this.#emitAction({
                 type: APPLinksClient.ApplinksClientEvents.UserLoggedOut,
                 data: this.#UserData,
             });
             throw new Error('logout failed');
         }
-        this.emitAction({
+        this.#emitAction({
             type: APPLinksClient.ApplinksClientEvents.UserLogoutFailed,
             data: this.#UserData,
         });
         this.#UserData = null;
     }
 
-    saveUserDataToLocalStorage() {
+    /**
+     * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
+     * @return {*}
+     */
+    #clientActionCallBack = (action) => void 0;
+
+    #setUpPanel = (/** @type {{ useDefaultPanel: any; }} */ options) => {
+        if (options.useDefaultPanel) {
+            this.#usePanel = new ApplinksPanel();
+            this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
+                this.#applinksClientPanelAction(action);
+        }
+    };
+
+    #applinksClientPanelAction = async (/** @type {"login" | "logout" | "help" | "account" } */ action) => {
+        switch (action) {
+            case 'login':
+                const { userData } = /** @type { UserData }*/ await this.LoginThroughAppLinks();
+                localStorage.setItem('user-data', JSON.stringify(userData));
+                break;
+            case 'logout':
+                this.logoutClient().then();
+                break;
+            case 'help':
+                window.open(this.#util.helpHtmlPath, '_blank');
+                break;
+            case 'account':
+                window.open(this.#util.accountHtmlPath, '_blank');
+                break;
+        }
+    };
+
+    /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
+    #setUserData(userSata) {
+        if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
+            this.#UserData = { ...userSata };
+            this.#updatePanelStatus('logged-in');
+            return APPLinksClient.Messages.UserWasSet;
+        }
+        return APPLinksClient.Messages.UserWasNotSet;
+    }
+
+    /**
+     *
+     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"} status
+     */
+    #updatePanelStatus(status) {
+        if (!this.#usePanel) {
+            return;
+        }
+        this.#usePanel.setStatus(status, this.#UserData);
+    }
+
+    #loginActions = () => {
+        this.#emitAction({
+            type: APPLinksClient.ApplinksClientEvents.UserLoggedIn,
+            data: this.#UserData,
+        });
+        this.#updatePanelStatus('logged-in');
+        if (this.#options.useLocalStorage) {
+            this.#saveUserDataToLocalStorage();
+        }
+    };
+
+    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
+        userSata.fullName && userSata.id && userSata.username && userSata.token;
+
+    #saveUserDataToLocalStorage() {
         this.#util.storeUserDataToLocalStorage(this.#UserData);
     }
 
-    tryToUpdateUserDataFromLocalStorage() {
+    #tryToUpdateUserDataFromLocalStorage() {
         const checkLSForUSerData = () => {
             const userDAtaFromLS = this.#util.getUserDataFromLocalStorage();
             if (!userDAtaFromLS?.length) {
@@ -556,14 +556,14 @@ export class APPLinksClient {
         };
         const userFromLS = checkLSForUSerData();
 
-        if (this.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
+        if (this.#setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
             return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
         }
         return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
     }
 
-    async requestTokenRefresh() {
-        this.emitAction({
+    async #requestTokenRefresh() {
+        this.#emitAction({
             type: APPLinksClient.ApplinksClientEvents.RefreshingToken,
             data: {},
         });
@@ -576,14 +576,14 @@ export class APPLinksClient {
             this.#UserData.token = body.token;
             this.#UserData.refreshToken = body.refreshToken;
 
-            this.saveUserDataToLocalStorage();
-            this.emitAction({
+            this.#saveUserDataToLocalStorage();
+            this.#emitAction({
                 type: APPLinksClient.ApplinksClientEvents.RefreshingTokenSuccess,
                 data: { status, body },
             });
             return APPLinkUtils.Success;
         } else {
-            this.emitAction({
+            this.#emitAction({
                 type: APPLinksClient.ApplinksClientEvents.RefreshingTokenFailed,
                 data: { status, body },
             });
@@ -591,19 +591,19 @@ export class APPLinksClient {
         }
     }
 
-    handleAuthFailure() {
-        this.emitAction({
+    #handleAuthFailure() {
+        this.#emitAction({
             type: APPLinksClient.ApplinksClientEvents.authFailed,
             data: this.#UserData,
         });
-        this.updatePanelStatus('error-please-relogin');
+        this.#updatePanelStatus('error-please-relogin');
     }
 
     /**
      * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
      * @return {*}
      */
-    emitAction(action) {
+    #emitAction(action) {
         this.#clientActionCallBack(action);
     }
 }
