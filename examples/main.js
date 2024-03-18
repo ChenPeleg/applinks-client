@@ -52,7 +52,7 @@ const checkLSForUSerData = () => {
 };
 const userFromLS = checkLSForUSerData();
 
-if (appLinkClient.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
+if (appLinkClient.innerMethods.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
     updateUserUi(userFromLS);
 }
 window.loginToServer = loginToServer;

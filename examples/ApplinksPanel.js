@@ -368,7 +368,7 @@ export class ApplinksPanel {
                 const userNameInMenu = document.getElementById(`${this.#applinksPanelId}-popover-login-name`);
                 const errorMessageElement = document.querySelector(`#${this.#applinksPanelId}-message-info`);
                 // @ts-ignore
-                errorMessageElement.style.display = 'flex';
+                errorMessageElement.style.display = 'none';
 
 
                 if (userInitials.innerHTML) {

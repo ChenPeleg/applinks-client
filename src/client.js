@@ -316,11 +316,14 @@ export class APPLinksClient {
 
     get innerMethods() {
         return {
-            tryToUpdateUserDataFromLocalStorage: this.#tryToUpdateUserDataFromLocalStorage,
-            requestTokenRefresh: this.#requestTokenRefresh,
-            applinksClientPanelAction: this.#applinksClientPanelAction,
-            handleAuthFailure: this.#handleAuthFailure,
-            saveUserDataToLocalStorage: this.#saveUserDataToLocalStorage,
+            /** @type {(userData : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
+            setUserData: (userData) => this.#setUserData(userData),
+            tryToUpdateUserDataFromLocalStorage: () => this.#tryToUpdateUserDataFromLocalStorage(),
+            requestTokenRefresh: () => this.#requestTokenRefresh(),
+            /** @type  {(action :  "login" | "logout" | "help" | "account"  ) => Promise<void>}  */
+            applinksClientPanelAction: (action) => this.#applinksClientPanelAction(action),
+            handleAuthFailure: () => this.#handleAuthFailure(),
+            saveUserDataToLocalStorage: () => this.#saveUserDataToLocalStorage(),
         };
     }
 
@@ -516,10 +519,10 @@ export class APPLinksClient {
         }
     };
 
-    /** @type {(userSata : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
-    #setUserData(userSata) {
-        if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
-            this.#UserData = { ...userSata };
+    /** @type {(userData : UserData) => (typeof APPLinksClient.Messages[keyof APPLinksClient.Messages])}*/
+    #setUserData(userData) {
+        if (userData.fullName && userData.id && userData.username && userData.token) {
+            this.#UserData = { ...userData };
             this.#updatePanelStatus('logged-in');
             return APPLinksClient.Messages.UserWasSet;
         }
@@ -548,8 +551,8 @@ export class APPLinksClient {
         }
     };
 
-    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
-        userSata.fullName && userSata.id && userSata.username && userSata.token;
+    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userData) =>
+        userData?.fullName && userData.id && userData.username && userData.token;
 
     #saveUserDataToLocalStorage() {
         this.#util.storeUserDataToLocalStorage(this.#UserData);
