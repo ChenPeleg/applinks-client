@@ -365,6 +365,11 @@ export class ApplinksPanel {
             case 'logged-in':
                 showOnly('user-logged');
                 const userInitials = document.getElementById(`${this.#applinksPanelId}-user-initials`);
+                const userNameInMenu = document.getElementById(`${this.#applinksPanelId}-popover-login-name`);
+                const errorMessageElement = document.querySelector(`#${this.#applinksPanelId}-message-info`);
+                // @ts-ignore
+                errorMessageElement.style.display = 'flex';
+
 
                 if (userInitials.innerHTML) {
                     return;
@@ -376,6 +381,10 @@ export class ApplinksPanel {
                     .map((n) => n[0])
                     .join('');
                 userInitials.innerHTML = initials;
+
+                userNameInMenu.innerHTML = `${name}`;
+
+
                 break;
             case 'error-please-relogin':
                 showOnly('cloud-error');
