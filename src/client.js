@@ -30,6 +30,7 @@ import {ApplinksPanel} from '../examples/ApplinksPanel.js';
  * @typedef ApplinksClientOptions
  * @property { boolean } useDefaultPanel
  * @property { boolean } useLocalStorage
+ * @property { APPLinkUtils | any } appLinkUtils
  */
 export class APPLinkUtils {
     static #configs = {
@@ -289,6 +290,7 @@ export class APPLinksClient {
         options = {
             useDefaultPanel: false,
             useLocalStorage: true,
+            appLinkUtils: APPLinkUtils,
         }
     ) {
         this.#appId = appId;

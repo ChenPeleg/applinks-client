@@ -1,5 +1,6 @@
 import {APPLinksClient, APPLinkUtils} from '../src/client.js';
 import {fetchMock} from '../utils/testing/mocks/fetch.mock.js';
+import {ApplinksUtilsMock} from './mocks/ApplinksUtils.mock.js';
 
 /** @type {UserData}*/
 const userData = {
@@ -16,7 +17,11 @@ globalThis.fetch = spyFetch;
 
 describe('client js class', () => {
     it('instantiate class witout errors', () => {
-        const client = new APPLinksClient(appName);
+        const client = new APPLinksClient(appName, {
+            appLinkUtils: ApplinksUtilsMock,
+            useLocalStorage: false,
+            useDefaultPanel: false,
+        });
         expect(!!client).toBe(true);
     });
     describe('user data', async () => {
