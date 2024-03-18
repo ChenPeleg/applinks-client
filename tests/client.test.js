@@ -48,19 +48,34 @@ describe('client js class', () => {
             spyFetch.reset();
             client.loadSavedRecords();
             const calls = spyFetch.getCalls();
-            expect(JSON.stringify(calls[0])).toBe(
-                `{"url":"${constants.baseUrl}/${constants.recordsApiPath}??appId=${appName}","options":{"headers":{"Content-Type":"application/json","Authorization":"Token ${userData.token}"},"mode":"cors","cache":"no-cache","credentials":"same-origin","redirect":"follow","referrerPolicy":"no-referrer"}} `
-            );
+            const call = calls[0];
+            expect(call.url).toBe(`${constants.baseUrl}/${constants.recordsApiPath}?appId=${appName}`);
+            expect(call.options.headers.Authorization).toBe(`Token ${userData.token}`);
+            expect(call.options.headers['Content-Type']).toBe('application/json');
+            expect(call.options.mode).toBe('cors');
+            expect(call.options.cache).toBe('no-cache');
+            expect(call.options.credentials).toBe('same-origin');
+            expect(call.options.redirect).toBe('follow');
+            expect(call.options.referrerPolicy).toBe('no-referrer');
         });
-        // it('load saved records returns data as an object correctly ', async () => {
-        //     const client = new APPLinksClient(appName);
-        //     client.innerMethods.setUserData(userData);
-        //     const dataToSave = 'data to save';
-        //     spyFetch.reset();
-        //     spyFetch.setResponse({ responseBody: { data: dataToSave } });
-        //     const result = await client.loadSavedRecords();
-        //     expect(JSON.stringify(result)).toBe(`{"data":"${dataToSave}"}`);
-        // });
+        it('load saved records returns data as an object correctly ', async () => {
+            const client = new APPLinksClient(appName);
+            client.innerMethods.setUserData(userData);
+            const dataToSave = '{"record": "data to save"}';
+            spyFetch.reset();
+            const returnBody = {
+                Data: dataToSave,
+                Name: appName,
+                UserId: userData.id,
+                AppId: appName,
+                Timestamp: new Date().toISOString(),
+            };
+
+            spyFetch.setResponse({ responseBody: returnBody });
+            const result = await client.loadSavedRecords();
+            expect(result.app_data).toBe(dataToSave);
+            expect(result.user_id).toBe(userData.id);
+        });
         // it('load saved records raises an error if error happened ', async () => {
         //     const client = new APPLinksClient(appName);
         //     client.innerMethods.setUserData(userData);
