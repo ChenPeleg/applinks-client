@@ -19,7 +19,6 @@ class ApplinksPanelOptionsGraphicUtils {
        --popover-transition-duration: 0.1s;
     }
     #${id}-wrapper {
-    
         width: 40px;
         height: 40px;
         background-color: lightgray;
@@ -276,19 +275,22 @@ class ApplinksPanelOptions {
      * @param {{position :keyof ApplinksPanelOptions.Position,
      *  panelType: keyof ApplinksPanelOptions.PanelType
      *  userIcon: keyof ApplinksPanelOptions.userIcon
-     * }} props
+     *  x: number,
+     *  y: number,
+     *  sizeModifier: number,
+     *  color: string,
+     * }} props?
      */
-    constructor(
-        { panelType, position, userIcon } = {
-            // @ts-ignore
-            panelType: ApplinksPanelOptions.PanelType.classic, // @ts-ignore
-            position: ApplinksPanelOptions.Position.bottomLeft, // @ts-ignore
-            userIcon: ApplinksPanelOptions.userIcon.initials,
-        }
-    ) {
+    constructor({ panelType, position, userIcon, x, y, sizeModifier, color }) {
         this.position = position || ApplinksPanelOptions.Position.bottomLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
+        this.customModifiers = {
+            x: x || 0,
+            y: y || 0,
+            sizeModifier: sizeModifier || 1,
+            color: color || 'lightgray',
+        };
     }
 }
 
@@ -305,6 +307,7 @@ export class ApplinksPanel {
      * @param {ApplinksPanelOptions} [panelOptions]
      */
     constructor(panelOptions) {
+        // @ts-ignore
         this.panelOptions = panelOptions || new ApplinksPanelOptions();
 
         this.#panelElement = this.#createPanelElement();
