@@ -265,6 +265,7 @@ export class APPLinksClient {
         UserRecordLoaded: 'UserRecordLoaded',
         UserRecordLoadFailed: 'UserRecordLoadFailed',
         RefreshingToken: 'RefreshingToken',
+        RefreshingTokenSuccess: 'RefreshingTokenSuccess',
         RefreshingTokenFailed: 'RefreshingTokenFailed',
         authFailed: 'authFailed',
     };
@@ -385,16 +386,19 @@ export class APPLinksClient {
         userSata.fullName && userSata.id && userSata.username && userSata.token;
 
     async loadSavedRecords() {
-        this.updatePanelStatus('updating');
-
         if (!this.#validateUserData(this.#UserData)) {
             this.emitAction({
-                type: APPLinksClient.ApplinksClientEvents.UserRecordUpdateFailed,
+                type: APPLinksClient.ApplinksClientEvents.UserRecordLoadFailed,
                 data: this.#UserData,
             });
-            throw new Error('cannot load record without user data');
-        }
 
+            throw new Error(
+                this.#UserData
+                    ? 'User data is corrupt or invalid'
+                    : 'User is not logged in; cannot load record without user data'
+            );
+        }
+        this.updatePanelStatus('updating');
         const url =
             `${this.#util.recordUrl}?` +
             new URLSearchParams({
@@ -441,8 +445,18 @@ export class APPLinksClient {
      */
     async savedRecord(dataToSave) {
         if (!this.#validateUserData(this.#UserData)) {
-            throw new Error('cannot save record without user data');
+            this.emitAction({
+                type: APPLinksClient.ApplinksClientEvents.UserRecordUpdateFailed,
+                data: this.#UserData,
+            });
+
+            throw new Error(
+                this.#UserData
+                    ? 'User data is corrupt or invalid'
+                    : 'User is not logged in; cannot save record without user data'
+            );
         }
+
         this.updatePanelStatus('updating');
         const url =
             `${this.#util.recordUrl}?` +
@@ -504,18 +518,27 @@ export class APPLinksClient {
     }
 
     async logoutClient() {
-        this.#UserData = null;
         this.updatePanelStatus('not-logged-in');
         APPLinkUtils.removeUserDataFromLocalStorage();
         const url = this.#util.logoutUrl;
         const { status } = await this.#util.PostData(
             url,
-            { refreshToken: this.#UserData.refreshToken },
+            { refreshToken: this.#UserData?.refreshToken },
             this.#UserData?.token
         );
+
         if (status !== 200) {
+            this.emitAction({
+                type: APPLinksClient.ApplinksClientEvents.UserLoggedOut,
+                data: this.#UserData,
+            });
             throw new Error('logout failed');
         }
+        this.emitAction({
+            type: APPLinksClient.ApplinksClientEvents.UserLogoutFailed,
+            data: this.#UserData,
+        });
+        this.#UserData = null;
     }
 
     saveUserDataToLocalStorage() {
@@ -540,6 +563,10 @@ export class APPLinksClient {
     }
 
     async requestTokenRefresh() {
+        this.emitAction({
+            type: APPLinksClient.ApplinksClientEvents.RefreshingToken,
+            data: {},
+        });
         const { status, body } = await this.#util.RequestTokenRefresh(
             this.#util.refreshUrl,
             this.#UserData?.refreshToken || '',
@@ -548,11 +575,12 @@ export class APPLinksClient {
         if (status === 200 && body.token) {
             this.#UserData.token = body.token;
             this.#UserData.refreshToken = body.refreshToken;
+
+            this.saveUserDataToLocalStorage();
             this.emitAction({
-                type: APPLinksClient.ApplinksClientEvents.RefreshingToken,
+                type: APPLinksClient.ApplinksClientEvents.RefreshingTokenSuccess,
                 data: { status, body },
             });
-            this.saveUserDataToLocalStorage();
             return APPLinkUtils.Success;
         } else {
             this.emitAction({
