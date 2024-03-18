@@ -255,6 +255,18 @@ export class APPLinksClient {
     };
 
     static AuthError = APPLinkUtils.AuthError;
+    static ApplinksClientEvents = {
+        UserLoggedIn: 'UserLoggedIn',
+        UserLoggedOut: 'UserLoggedOut',
+        UserLoginFailed: 'UserLoginFailed',
+        UserLogoutFailed: 'UserLogoutFailed',
+        UserRecordUpdated: 'UserRecordUpdated',
+        UserRecordUpdateFailed: 'UserRecordUpdateFailed',
+        UserRecordLoaded: 'UserRecordLoaded',
+        UserRecordLoadFailed: 'UserRecordLoadFailed',
+        RefreshingToken: 'RefreshingToken',
+        authFailed: 'authFailed',
+    };
 
     /** @type {ApplinksClientOptions  } */
     #options;
@@ -289,9 +301,23 @@ export class APPLinksClient {
         }
     }
 
+    set clientActionCallBack(cb) {
+        if (typeof cb === 'function') {
+            this.#clientActionCallBack = cb;
+        }
+        throw new Error('clientActionCallBack must be a function');
+    }
+
     get userStatus() {
         return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
     }
+
+    /**
+     *
+     * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
+     * @return {*}
+     */
+    #clientActionCallBack = (action) => void 0;
 
     #setUpPanel = (/** @type {{ useDefaultPanel: any; }} */ options) => {
         if (options.useDefaultPanel) {
@@ -341,6 +367,10 @@ export class APPLinksClient {
     }
 
     #loginActions = () => {
+        this.emitAction({
+            type: APPLinksClient.ApplinksClientEvents.UserLoggedIn,
+            data: this.#UserData,
+        });
         this.updatePanelStatus('logged-in');
         if (this.#options.useLocalStorage) {
             this.saveUserDataToLocalStorage();
@@ -352,7 +382,12 @@ export class APPLinksClient {
 
     async loadSavedRecords() {
         this.updatePanelStatus('updating');
+
         if (!this.#validateUserData(this.#UserData)) {
+            this.emitAction({
+                type: APPLinksClient.ApplinksClientEvents.UserRecordUpdateFailed,
+                data: this.#UserData,
+            });
             throw new Error('cannot load record without user data');
         }
 
@@ -365,14 +400,24 @@ export class APPLinksClient {
 
         if (status === 440) {
             if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
+                this.emitAction({
+                    type: APPLinksClient.ApplinksClientEvents.UserRecordLoaded,
+                    data: { body, status, headers },
+                });
                 return this.loadSavedRecords();
             }
             this.handleAuthFailure();
+
             throw new Error('cannot load record without user data; auth failed');
         }
+
         console.log('headers', headers, headers.keys());
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
+        this.emitAction({
+            type: APPLinksClient.ApplinksClientEvents.UserRecordLoaded,
+            data: { body, status, headers },
+        });
 
         return this.#util.serializeRecordData(body);
     }
@@ -489,7 +534,6 @@ export class APPLinksClient {
     }
 
     async requestTokenRefresh() {
-        console.log('refreshing token');
         const { status, body } = await this.#util.RequestTokenRefresh(
             this.#util.refreshUrl,
             this.#UserData?.refreshToken || '',
@@ -498,6 +542,10 @@ export class APPLinksClient {
         if (status === 200 && body.token) {
             this.#UserData.token = body.token;
             this.#UserData.refreshToken = body.refreshToken;
+            this.emitAction({
+                type: APPLinksClient.ApplinksClientEvents.RefreshingToken,
+                data: { status, body },
+            });
             this.saveUserDataToLocalStorage();
             return APPLinkUtils.Success;
         } else {
@@ -506,6 +554,18 @@ export class APPLinksClient {
     }
 
     handleAuthFailure() {
+        this.emitAction({
+            type: APPLinksClient.ApplinksClientEvents.authFailed,
+            data: this.#UserData,
+        });
         this.updatePanelStatus('error-please-relogin');
+    }
+
+    /**
+     * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
+     * @return {*}
+     */
+    emitAction(action) {
+        this.#clientActionCallBack(action);
     }
 }
