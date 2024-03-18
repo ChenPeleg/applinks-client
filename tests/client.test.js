@@ -9,6 +9,7 @@ const userData = {
     id: 'Smith',
     fullName: 'John',
     username: 'john_smith',
+    refreshToken: 'beefdead',
 };
 const appName = 'my-app-name';
 const constants = new APPLinkUtils()._debug_get_constants();
