@@ -42,7 +42,7 @@ export class APPLinkUtils {
         refreshApiPath: 'api/refreshToken',
         localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
-        tokenSoonToExpireHeader: 'X-token-soon-to-expire',
+        tokenSoonToExpireHeader: 'Expires',
     };
     static Success = 'success';
     static Error = 'error';
@@ -166,7 +166,7 @@ export class APPLinkUtils {
                 redirect: 'follow', // manual, *follow, error
                 referrerPolicy: 'no-referrer',
             });
-            APPLinkUtils.hasTokenExpiryHeader(response.headers);
+
             const asJson = await response.json();
             return {
                 body: asJson,
@@ -370,6 +370,8 @@ export class APPLinksClient {
             this.handleAuthFailure();
             throw new Error('cannot load record without user data; auth failed');
         }
+        console.log('headers', headers, headers.keys());
+        await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
 
         return this.#util.serializeRecordData(body);
