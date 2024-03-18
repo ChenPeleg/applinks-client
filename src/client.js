@@ -265,6 +265,7 @@ export class APPLinksClient {
         UserRecordLoaded: 'UserRecordLoaded',
         UserRecordLoadFailed: 'UserRecordLoadFailed',
         RefreshingToken: 'RefreshingToken',
+        RefreshingTokenFailed: 'RefreshingTokenFailed',
         authFailed: 'authFailed',
     };
 
@@ -301,9 +302,13 @@ export class APPLinksClient {
         }
     }
 
-    set clientActionCallBack(cb) {
+    /**
+     * @param  {(action: {type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any})=>void} cb
+     */
+    set setClientActionCallBack(cb) {
         if (typeof cb === 'function') {
             this.#clientActionCallBack = cb;
+            return;
         }
         throw new Error('clientActionCallBack must be a function');
     }
@@ -313,7 +318,6 @@ export class APPLinksClient {
     }
 
     /**
-     *
      * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
      * @return {*}
      */
@@ -411,7 +415,6 @@ export class APPLinksClient {
             throw new Error('cannot load record without user data; auth failed');
         }
 
-        console.log('headers', headers, headers.keys());
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
         this.emitAction({
@@ -429,8 +432,7 @@ export class APPLinksClient {
         if (headers.get('x-action') === 'login') {
             await this.LoginThroughAppLinks();
         } else if (APPLinkUtils.hasTokenExpiryHeader(headers)) {
-            console.log('token soon to expire');
-            // this.logoutClient().then();
+            this.requestTokenRefresh().then();
         }
     }
 
@@ -457,7 +459,7 @@ export class APPLinksClient {
         }
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
-        return this.#util.serializeRecordData(body);
+        return body;
     }
 
     /** @type {()=> Promise<LoginData>}*/
@@ -466,7 +468,7 @@ export class APPLinksClient {
             <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
                 this.#util.htmlLoginUrl
             }"></iframe> </div>`;
-        console.log('html', this.#util.htmlLoginUrl);
+
         const newLoginWindow = window.open('', '', 'width=500,height=700');
         this.#newLoginWindowRef = newLoginWindow;
         const doc = newLoginWindow.document;
@@ -506,7 +508,11 @@ export class APPLinksClient {
         this.updatePanelStatus('not-logged-in');
         APPLinkUtils.removeUserDataFromLocalStorage();
         const url = this.#util.logoutUrl;
-        const { status } = await this.#util.GetData(url, this.#UserData?.token);
+        const { status } = await this.#util.PostData(
+            url,
+            { refreshToken: this.#UserData.refreshToken },
+            this.#UserData?.token
+        );
         if (status !== 200) {
             throw new Error('logout failed');
         }
@@ -549,6 +555,10 @@ export class APPLinksClient {
             this.saveUserDataToLocalStorage();
             return APPLinkUtils.Success;
         } else {
+            this.emitAction({
+                type: APPLinksClient.ApplinksClientEvents.RefreshingTokenFailed,
+                data: { status, body },
+            });
             return APPLinkUtils.Error;
         }
     }
