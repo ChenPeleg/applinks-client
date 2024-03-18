@@ -39,7 +39,7 @@ const saveData = async () => {
     console.log('save Data', result);
 };
 const refreshToken = async () => {
-    const result = await appLinkClient.#requestTokenRefresh();
+    const result = await appLinkClient.innerMethods.requestTokenRefresh();
     console.log('refreshToken', result);
 };
 const checkLSForUSerData = () => {

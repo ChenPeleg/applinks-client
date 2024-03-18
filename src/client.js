@@ -314,6 +314,16 @@ export class APPLinksClient {
         throw new Error('clientActionCallBack must be a function');
     }
 
+    get innerMethods() {
+        return {
+            tryToUpdateUserDataFromLocalStorage: this.#tryToUpdateUserDataFromLocalStorage,
+            requestTokenRefresh: this.#requestTokenRefresh,
+            applinksClientPanelAction: this.#applinksClientPanelAction,
+            handleAuthFailure: this.#handleAuthFailure,
+            saveUserDataToLocalStorage: this.#saveUserDataToLocalStorage,
+        };
+    }
+
     get userStatus() {
         return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
     }
