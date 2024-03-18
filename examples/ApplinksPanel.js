@@ -19,6 +19,7 @@ class ApplinksPanelOptionsGraphicUtils {
        --popover-transition-duration: 0.1s;
     }
     #${id}-wrapper {
+    
         width: 40px;
         height: 40px;
         background-color: lightgray;
@@ -31,6 +32,7 @@ class ApplinksPanelOptionsGraphicUtils {
         top:0;
         border-radius: 0 0 2px 0 ;
     }
+    
     #${id}-main-user-button {
         display: flex;
         justify-content: center;
@@ -44,47 +46,56 @@ class ApplinksPanelOptionsGraphicUtils {
         align-items: center;
         border-radius: 50%;
         background-color: aliceblue;
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1); 
         &:hover {
             box-shadow: 0 0 2px 2px rgba(50, 50, 50, 0.2);
         }
         transition: box-shadow 0.2s, opacity 0.2s; 
     }
-    .${id}-main-icon svg {
+    .${id}-main-icon:not(#${id}-cloud-complete) svg {
         transition: box-shadow 0.2s, opacity 0.05s; 
         opacity: 0;
      }
-    .${id}-main-icon.active svg {
+    .${id}-main-icon.active:not(#${id}-cloud-complete) svg {
        opacity: 1;
     }
-    #${id}-unloged-user {
-        
+  
+    #${id}-user-initials {
+        color : black;
+        font-size: 1rem;
     }
     #${id}-popover {
+        
         padding: 0;
-        border-radius: 5px;
+        border-radius: 7px;
         box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
         border: 0px solid rgba(0, 0, 0, 0.2);
         background-color: #FAF9F6;
         font-size: 0.9rem;
         font-family: sans-serif;
-        width: 200px;
+        width: 180px; 
+        position: absolute;
+        left: 6px;
+        top: 45px;
         overflow: hidden;
        
        #${id}-popover-login-name {
+         padding: 0px 20px;
          font-weight: bold;
        }
         .applinks-panel-popover-content {
                 padding 0;
+                padding-bottom: 10px;
                 width: 100%;
                 display: flex;
                 flex-direction: column;
                 align-items: start;
                 justify-content: center;
+             
                 span {
-                    font-size: 1.2rem;
+                   
                     margin-bottom: 10px;
                 }
                 .applinks-panel-menu {
@@ -109,6 +120,13 @@ class ApplinksPanelOptionsGraphicUtils {
                             background-color: #f0f0f0;
                         }
                         div {
+                            display: flex;
+                            flex-direction: row;
+                            gap: 10px;
+                            align-items: center;
+                            justify-content: start;
+                            gap 10px;
+                            padding: 0 20px ;
                         }
                     }
                 }
@@ -116,10 +134,11 @@ class ApplinksPanelOptionsGraphicUtils {
         }
         .close-container{
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
-            padding-bottom: 10px;
+            padding-bottom: 0px; 
             div.close-container-button {
+                margin : 5px;
                 padding: 5px;
                 cursor: pointer;
                 width: 20px;
@@ -145,15 +164,20 @@ class ApplinksPanelOptionsGraphicUtils {
     
     
 #${id}-popover[popover]:popover-open {
+
     opacity: 1;
     transform: scale(1);
+
+}
+body [popover] {
+    inset:unset;
 }
 
 #${id}-popover[popover] {
 
-
+ 
     /* Final state of the exit animation */
-    opacity: 0;
+    opacity: 0; 
     transform: scale(.8);
 
     transition:
@@ -176,12 +200,55 @@ class ApplinksPanelOptionsGraphicUtils {
         transform: scale(0);
     }
     }
+    #${id}-message-info {
+      position: fixed;
+      left: 45px;
+      padding: 0;
+      border-radius: 7px;
+      box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
+      border: 0px solid rgba(0, 0, 0, 0.2);
+      background-color: #FAF9F6;
+      font-size: 0.9rem;
+      font-family: sans-serif;
+      display: none;
+      flex-direction: row;
+      .message-text {
+        padding: 10px 20px;
+      }
+      
+      .close-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0px; 
+            div.close-container-button {
+                margin : 5px;
+                padding: 5px;
+                cursor: pointer;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 50%;
+                transition: background-color 0.1s;
+                background-color: transparent;
+                transition-delay: 0s;
+                &:hover {
+                   transition: none;
+                   transition-delay: 0s;
+                   background-color: #f0f0f0;
+                }
+            }
+        }
+      
+    }
 
     `;
 }
 
 /**
- * @typedef  {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in"}  AppLinkPanelStatusDisplay
+ * @typedef  {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"}  AppLinkPanelStatusDisplay
  */
 
 /**
@@ -199,20 +266,26 @@ class ApplinksPanelOptions {
     static PanelType = {
         classic: 'classic',
     };
+    static userIcon = {
+        'icon': 'icon', 'initials': 'initials'
+    };
 
     /**
      * @constructor
      * @param {{position :keyof ApplinksPanelOptions.Position,
      *  panelType: keyof ApplinksPanelOptions.PanelType
+     *  userIcon: keyof ApplinksPanelOptions.userIcon
      * }} props
      */
-    constructor({panelType, position} = {
+    constructor({panelType, position, userIcon} = {
         // @ts-ignore
         panelType: ApplinksPanelOptions.PanelType.classic, // @ts-ignore
-        position: ApplinksPanelOptions.Position.bottomLeft,
+        position: ApplinksPanelOptions.Position.bottomLeft, // @ts-ignore
+        userIcon: ApplinksPanelOptions.userIcon.initials,
     }) {
         this.position = position || ApplinksPanelOptions.Position.bottomLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
+        this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
     }
 }
 
@@ -236,13 +309,17 @@ export class ApplinksPanel {
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId));
     }
 
-    actionCallBack = () => {};
+    actionCallBack = (action) => {};
+    #commitAction = (action) => {
+        this.actionCallBack(action);
+    };
 
     /**
      *
      * @param {AppLinkPanelStatusDisplay} status
+     * @param {UserData} [userData]
      */
-    setStatus(status) {
+    setStatus(status, userData = null) {
         const allIcons = [
 'user-logged', 'cloud-error', 'cloud-complete', 'cloud-update',
                           'unloged-user'
@@ -250,6 +327,9 @@ export class ApplinksPanel {
         const showOnly = (icon) => {
             allIcons.forEach((i) => {
                 const el = document.getElementById(`${this.#applinksPanelId}-${i}`);
+                if (!el) {
+                    return;
+                }
                 if (i === icon) {
                     el.style.display = 'flex';
                     setTimeout(() => {
@@ -263,6 +343,7 @@ export class ApplinksPanel {
         };
 
         this.#status = status;
+        // status = 'error-please-relogin';
         switch (status) {
             case 'not-logged-in':
                 showOnly('unloged-user');
@@ -283,46 +364,74 @@ export class ApplinksPanel {
                 break;
             case 'logged-in':
                 showOnly('user-logged');
+                const userInitials = document.getElementById(`${this.#applinksPanelId}-user-initials`);
+
+                if (userInitials.innerHTML) {
+                    return;
+                }
+
+                const name = userData?.fullName || userData?.username || 'User';
+                const initials = name
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('');
+                userInitials.innerHTML = initials;
+                break;
+            case 'error-please-relogin':
+                showOnly('cloud-error');
+                const messageElement = document.querySelector(`#${this.#applinksPanelId}-message-info`);
+                // @ts-ignore
+                messageElement.style.display = 'flex';
+                setTimeout(() => {
+                    this.setStatus('not-logged-in');
+                }, 1000);
+
                 break;
             default:
         }
     }
 
     #addCSS = (css) => {
-        // document.head.appendChild(document.createElement('style')).innerHTML = css;
-        const sheet = new CSSStyleSheet();
-        sheet.replace(css);
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+        document.head.appendChild(document.createElement('style')).innerHTML = css;
+
     };
 
     #createPanelElement() {
         const element = document.createElement('div');
 
+        const userIcon = this.panelOptions.userIcon === 'initials' ?
+            `<div id="${this.#applinksPanelId}-user-initials"></div>` :
+            ApplinksPanelOptionsGraphicUtils.userLoggedIcon;
+
         const innerHtml = `
-        <div   id="${this.#applinksPanelId}-popover"  style="position:fixed; top:0px" >
+ 
+        <div id="${this.#applinksPanelId}-wrapper" >
+            <div popover  id="${this.#applinksPanelId}-popover">
         
             <div class="close-container">
+             <div> <div id="${this.#applinksPanelId}-popover-login-name"> Logged in </div> </div>
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             </div>
            
-            <div class="applinks-panel-popover-content"> 
-        
-                <span> <span id="${this.#applinksPanelId}-popover-login-name"> chenpeleg </span> </span>
+            <div class="applinks-panel-popover-content">  
                 
-                <div class="applinks-panel-menu">
-                <div class="applinks-panel-menu-item"> <div> Logout </div> </div>
-                <div class="applinks-panel-menu-item">  <div>Settings</div> </div>
-                <div class="applinks-panel-menu-item"> <div> Support </div> </div>
+                <div class="applinks-panel-menu">   
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-account"> 
+                 <div> ${ApplinksPanelOptionsGraphicUtils.settingsIcon} Settings</div> </div>
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-help"> 
+                <div> ${ApplinksPanelOptionsGraphicUtils.helpIcon} Support </div> </div>
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-logout"> <div> ${ApplinksPanelOptionsGraphicUtils.logoutIcon} Logout </div> </div>
                 </div>
             </div>
-        </div>`;
-        const moreInnerHtml = `
-        <div id="${this.#applinksPanelId}-wrapper" >
-        <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" popovertarget="${this.#applinksPanelId}-popover">
+        </div> 
+         <button style="background-color: transparent" popovertarget="${this.#applinksPanelId}-popover" popovertargetaction="toggle">
+        <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" >
+            
             <div id="${this.#applinksPanelId}-unloged-user"  
-            class="${this.#applinksPanelId}-main-icon active" style="display: flex">
-            ${ApplinksPanelOptionsGraphicUtils.userIcon}
+              class="${this.#applinksPanelId}-main-icon active" style="display: flex"> 
+              ${ApplinksPanelOptionsGraphicUtils.userIcon}
             </div>
+           
             <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
               ${ApplinksPanelOptionsGraphicUtils.cloudUpdateIcon}
@@ -337,10 +446,19 @@ export class ApplinksPanel {
             </div>
               <div id="${this.#applinksPanelId}-user-logged"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
-              ${ApplinksPanelOptionsGraphicUtils.userLoggedIcon}
+              ${userIcon}
             </div>
         
         </div>
+          </button>
+          <div id="${this.#applinksPanelId}-message-info" class="${this.#applinksPanelId}-message-info"> 
+         <div class="message-text" id="${this.#applinksPanelId}-message-content"> You're not connected. Please login </div>
+           <div class="close-container"> 
+             <div role="button" class="close-container-button" id="${this.#applinksPanelId}-message-close">
+${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
+
+            </div>
+          </div>
         </div>`;
         element.innerHTML = innerHtml;
         document.body.appendChild(element);
@@ -352,28 +470,40 @@ export class ApplinksPanel {
     #attachHandlers = () => {
         const mainElement = document.querySelector(`#${this.#applinksPanelId}-wrapper`);
         const popover = document.querySelector(`#${this.#applinksPanelId}-popover`);
+        const messageElement = document.querySelector(`#${this.#applinksPanelId}-message-info`);
 
         mainElement?.addEventListener('click', (ev) => {
             if (this.#status === 'not-logged-in') {
-                // @ts-ignore
-                popover.showPopover();
+                ev.preventDefault();
+                ev.stopPropagation();
+                this.actionCallBack('login');
             }
-            // @ts-ignore
-            popover.showPopover();
-            console.log('click', ev);
+
         });
-        popover.addEventListener('close', (ev) => {
-            console.log('close', ev);
-        });
+
         document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', (ev) => {
             // @ts-ignore
             popover.hidePopover();
         });
-
-        setTimeout(() => {
+        document.querySelector(`#${this.#applinksPanelId}-message-close`).addEventListener('click', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
             // @ts-ignore
-            popover.showPopover();
-        }, 100);
+            messageElement.style.display = 'none';
+        });
+
+        ['account', 'help', 'logout'].forEach((id) => {
+            document.querySelector(`#${this.#applinksPanelId}-button-${id}`).addEventListener('click', (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                this.#commitAction(id);
+                // @ts-ignore
+                popover.hidePopover();
+            });
+
+        });
+
+
     };
 }
 

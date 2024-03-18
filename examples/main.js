@@ -1,6 +1,9 @@
 import { APPLinksClient } from '../src/client.js';
 
-const appLinkClient = new APPLinksClient('app1Id', { useDefaultPanel: true });
+const appLinkClient = new APPLinksClient('app1Id', {
+    useDefaultPanel: true,
+    useLocalStorage: true,
+});
 
 const updateUserUi = (userData /** @type { UserData }*/) => {
     const userState = document.body.querySelector('div.user-state');
@@ -13,7 +16,7 @@ const updateUserUi = (userData /** @type { UserData }*/) => {
 
 const loginToServer = async () => {
     const { userData } = /** @type { UserData }*/ await appLinkClient.LoginThroughAppLinks();
-    appLinkClient.saveUserDataToLocalStorage(userData);
+    //appLinkClient.saveUserDataToLocalStorage(userData);
     updateUserUi(userData);
 };
 const loadData = async () => {
@@ -32,6 +35,10 @@ const saveData = async () => {
     const result = /** @type { any }*/ await appLinkClient.savedRecord(data);
     console.log('load Data', result);
 };
+const refreshToken = async () => {
+    const result = await appLinkClient.requestTokenRefresh();
+    console.log('refreshToken', result);
+};
 const checkLSForUSerData = () => {
     const userDAtaFromLS = localStorage.getItem('user-data');
     if (!userDAtaFromLS?.length) {
@@ -48,3 +55,4 @@ if (appLinkClient.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet
 window.loginToServer = loginToServer;
 window.loadData = loadData;
 window.saveData = saveData;
+window.refreshToken = refreshToken;

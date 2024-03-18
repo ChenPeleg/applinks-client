@@ -1,4 +1,5 @@
 //@ts-check
+import {ApplinksPanel} from '../examples/ApplinksPanel.js';
 
 /**
  * @typedef UserData
@@ -6,6 +7,7 @@
  * @property  { string } fullName
  * @property  { string } id
  * @property  { string } token
+ * @property  { string } refreshToken
  */
 
 /**
@@ -18,26 +20,47 @@
  * @property  { string } user_id
  */
 
-import {ApplinksPanel} from '../examples/ApplinksPanel.js';
-
 /**
  * @typedef LoginData
  * @property  { UserData } userData
  * @property { RecordData= } recordData
  */
 
+/**
+ * @typedef ApplinksClientOptions
+ * @property { boolean } useDefaultPanel
+ * @property { boolean } useLocalStorage
+ */
 export class APPLinkUtils {
     static #configs = {
-        baseUrl: 'https://apps-links.web.app',
-        userLoginHtmlPath: '#app-login',
-        userHelpHtmlPath: '#help',
-        userAccountHtmlPath: '#account',
+        baseUrl: 'https://apps-links.web.app', // 'http://localhost:5173', https://apps-links.web.app
+        userLoginHtmlPath: 'site/app-login',
+        userHelpHtmlPath: 'site/support',
+        userAccountHtmlPath: 'site/account',
         recordsApiPath: 'api/appRecord',
+        logoutApiPath: 'api/logout',
+        refreshApiPath: 'api/refreshToken',
         localStorageUserData: 'app-links-user-data',
         localStorageConfigData: 'app-links-config-data',
+        tokenSoonToExpireHeader: 'Expires',
     };
+    static Success = 'success';
+    static Error = 'error';
 
     constructor() {}
+
+    static get AuthError() {
+        class AuthError extends Error {
+            /**
+             * @param {string} message
+             */
+            constructor(message) {
+                super(message);
+            }
+        }
+
+        return AuthError;
+    }
 
     static get htmlLoginUrl() {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userLoginHtmlPath}`;
@@ -45,6 +68,22 @@ export class APPLinkUtils {
 
     static get recordUrl() {
         return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.recordsApiPath}`;
+    }
+
+    static get logoutUrl() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.logoutApiPath}`;
+    }
+
+    static get helpHtmlPath() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userHelpHtmlPath}`;
+    }
+
+    static get refreshUrl() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.refreshApiPath}`;
+    }
+
+    static get accountHtmlPath() {
+        return `${APPLinkUtils.#configs.baseUrl}/${APPLinkUtils.#configs.userAccountHtmlPath}`;
     }
 
     /**
@@ -61,8 +100,19 @@ export class APPLinkUtils {
         localStorage.setItem(APPLinkUtils.#configs.localStorageUserData, JSON.stringify(userData));
     }
 
+    static removeUserDataFromLocalStorage() {
+        localStorage.removeItem(APPLinkUtils.#configs.localStorageUserData);
+    }
+
     static getUserDataFromLocalStorage() {
         return localStorage.getItem(APPLinkUtils.#configs.localStorageUserData);
+    }
+
+    /**
+     * @param {Headers} headers
+     */
+    static hasTokenExpiryHeader(headers) {
+        return !!headers.get(APPLinkUtils.#configs.tokenSoonToExpireHeader);
     }
 
     /**
@@ -87,6 +137,7 @@ export class APPLinkUtils {
             referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
             body: JSON.stringify({ Data: data }),
         });
+
         return {
             body: await response.json(),
             status: response.status,
@@ -128,16 +179,51 @@ export class APPLinkUtils {
     }
 
     /**
+     *
+     * @param {string} url
+     * @param  {string} refreshToken
+     * @param  {string} token
+     * @return { Promise<{ body: any; status: number; headers: Headers; }>}
+     */
+    static async RequestTokenRefresh(url = '', refreshToken, token) {
+        const headers = {
+            'Content-Type': 'application/json',
+        };
+        if (token) {
+            headers['Authorization'] = 'Token ' + token;
+        }
+        const response = await fetch(url, {
+            method: 'POST',
+            mode: 'cors',
+            cache: 'no-cache', // credentials: 'same-origin',
+            headers: headers,
+            referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+            body: JSON.stringify({
+                applinksAuthToken: token,
+                refreshToken: refreshToken,
+            }),
+        });
+
+        return {
+            body: await response.json(),
+            status: response.status,
+            headers: response.headers,
+        };
+    }
+
+    /**
      * @param {{ Email: any; FullName: any; UID: any; }} userData
      * @param {any} TokenKey
+     * @param {string | null} refreshToken
      * @returns {UserData}
      */
-    static serializeUserData(userData, TokenKey) {
+    static serializeUserData(userData, TokenKey, refreshToken) {
         return {
             username: userData.Email,
             fullName: userData.FullName,
             id: userData.UID,
             token: TokenKey,
+            refreshToken: refreshToken,
         };
     }
 
@@ -167,31 +253,39 @@ export class APPLinksClient {
         UserWasSet: 'UserWasSet',
         UserWasNotSet: 'UserWasNotSet',
     };
+
+    static AuthError = APPLinkUtils.AuthError;
+
+    /** @type {ApplinksClientOptions  } */
+    #options;
     #newLoginWindowRef = null;
-    /**
-     *
-     * @type {ApplinksPanel | false}
-     */
+    /** @type {ApplinksPanel | false}     */
     #usePanel = false;
     /** @type {string} */ #appId;
     #util = APPLinkUtils;
-    /** @type {UserData} */ #UserData;
+    /** @type {UserData | null} */
+    #UserData;
 
     /**
      * @param {string} appId
-     * @param {{useDefaultPanel : boolean, loadUserDataFromStorage : boolean}} options
+     * @param {ApplinksClientOptions} options
      */
     constructor(
         appId,
         options = {
             useDefaultPanel: false,
-            loadUserDataFromStorage: true,
+            useLocalStorage: true,
         }
     ) {
         this.#appId = appId;
+        this.#options = options;
         this.#setUpPanel(options);
-        if (options.loadUserDataFromStorage) {
-            this.tryToUpdateUserDataFromLocalStorage();
+
+        if (options.useLocalStorage) {
+            const result = this.tryToUpdateUserDataFromLocalStorage();
+            if (result.message === APPLinksClient.Messages.UserWasSet) {
+                this.updatePanelStatus('logged-in');
+            }
         }
     }
 
@@ -214,10 +308,13 @@ export class APPLinksClient {
                 localStorage.setItem('user-data', JSON.stringify(userData));
                 break;
             case 'logout':
+                this.logoutClient().then();
                 break;
             case 'help':
+                window.open(this.#util.helpHtmlPath, '_blank');
                 break;
             case 'account':
+                window.open(this.#util.accountHtmlPath, '_blank');
                 break;
         }
     };
@@ -226,22 +323,29 @@ export class APPLinksClient {
     setUserData(userSata) {
         if (userSata.fullName && userSata.id && userSata.username && userSata.token) {
             this.#UserData = { ...userSata };
+            this.updatePanelStatus('logged-in');
             return APPLinksClient.Messages.UserWasSet;
         }
-        this.updatePanelStatus('logged-in');
         return APPLinksClient.Messages.UserWasNotSet;
     }
 
     /**
      *
-     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in"} status
+     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"} status
      */
     updatePanelStatus(status) {
         if (!this.#usePanel) {
             return;
         }
-        this.#usePanel.setStatus(status);
+        this.#usePanel.setStatus(status, this.#UserData);
     }
+
+    #loginActions = () => {
+        this.updatePanelStatus('logged-in');
+        if (this.#options.useLocalStorage) {
+            this.saveUserDataToLocalStorage();
+        }
+    };
 
     #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userSata) =>
         userSata.fullName && userSata.id && userSata.username && userSata.token;
@@ -257,8 +361,19 @@ export class APPLinksClient {
             new URLSearchParams({
                 appId: this.#appId || '',
             });
-        const { body } = await this.#util.GetData(url, this.#UserData?.token);
+        const { body, status, headers } = await this.#util.GetData(url, this.#UserData?.token);
+
+        if (status === 440) {
+            if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
+                return this.loadSavedRecords();
+            }
+            this.handleAuthFailure();
+            throw new Error('cannot load record without user data; auth failed');
+        }
+        console.log('headers', headers, headers.keys());
+        await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
+
         return this.#util.serializeRecordData(body);
     }
 
@@ -268,6 +383,9 @@ export class APPLinksClient {
     async checkHeadersForAdditionalAction(headers) {
         if (headers.get('x-action') === 'login') {
             await this.LoginThroughAppLinks();
+        } else if (APPLinkUtils.hasTokenExpiryHeader(headers)) {
+            console.log('token soon to expire');
+            // this.logoutClient().then();
         }
     }
 
@@ -284,7 +402,14 @@ export class APPLinksClient {
             new URLSearchParams({
                 appId: this.#appId || '',
             });
-        const { body, headers } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        if (status === 440) {
+            if ((await this.requestTokenRefresh()) === APPLinkUtils.Success) {
+                return this.savedRecord(dataToSave);
+            }
+            this.handleAuthFailure();
+            throw new APPLinksClient.AuthError('cannot save record without user data; auth failed');
+        }
         await this.checkHeadersForAdditionalAction(headers);
         this.updatePanelStatus('updateComplete');
         return this.#util.serializeRecordData(body);
@@ -296,6 +421,7 @@ export class APPLinksClient {
             <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
                 this.#util.htmlLoginUrl
             }"></iframe> </div>`;
+        console.log('html', this.#util.htmlLoginUrl);
         const newLoginWindow = window.open('', '', 'width=500,height=700');
         this.#newLoginWindowRef = newLoginWindow;
         const doc = newLoginWindow.document;
@@ -305,10 +431,10 @@ export class APPLinksClient {
                 'message',
                 (msg) => {
                     const data = msg.data;
-                    const { userData, appData, appSaveData, token, clientConfig } = data;
+                    const { userData, appData, appSaveData, token, clientConfig, refreshToken } = data;
                     this.#util.setConfigs(clientConfig);
 
-                    this.#UserData = this.#util.serializeUserData(userData, token);
+                    this.#UserData = this.#util.serializeUserData(userData, token, refreshToken);
                     if (this.#newLoginWindowRef) {
                         this.#newLoginWindowRef.close();
                         this.#newLoginWindowRef = null;
@@ -317,7 +443,8 @@ export class APPLinksClient {
                     if (!data?.token) {
                         reject(msg);
                     }
-                    this.updatePanelStatus('logged-in');
+                    this.#loginActions();
+
                     resolve({
                         userData: this.#UserData,
                         recordData: appSaveData ? this.#util.serializeRecordData(appSaveData, appData) : undefined,
@@ -327,6 +454,17 @@ export class APPLinksClient {
             );
             doc.write(html);
         });
+    }
+
+    async logoutClient() {
+        this.#UserData = null;
+        this.updatePanelStatus('not-logged-in');
+        APPLinkUtils.removeUserDataFromLocalStorage();
+        const url = this.#util.logoutUrl;
+        const { status } = await this.#util.GetData(url, this.#UserData?.token);
+        if (status !== 200) {
+            throw new Error('logout failed');
+        }
     }
 
     saveUserDataToLocalStorage() {
@@ -348,5 +486,26 @@ export class APPLinksClient {
             return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
         }
         return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
+    }
+
+    async requestTokenRefresh() {
+        console.log('refreshing token');
+        const { status, body } = await this.#util.RequestTokenRefresh(
+            this.#util.refreshUrl,
+            this.#UserData?.refreshToken || '',
+            this.#UserData?.token || ''
+        );
+        if (status === 200 && body.token) {
+            this.#UserData.token = body.token;
+            this.#UserData.refreshToken = body.refreshToken;
+            this.saveUserDataToLocalStorage();
+            return APPLinkUtils.Success;
+        } else {
+            return APPLinkUtils.Error;
+        }
+    }
+
+    handleAuthFailure() {
+        this.updatePanelStatus('error-please-relogin');
     }
 }
