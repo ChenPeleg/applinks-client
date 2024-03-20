@@ -272,16 +272,16 @@ class ApplinksPanelOptions {
 
     /**
      * @constructor
-     * @param {{position :keyof ApplinksPanelOptions.Position,
-     *  panelType: keyof ApplinksPanelOptions.PanelType
-     *  userIcon: keyof ApplinksPanelOptions.userIcon
-     *  x: number,
-     *  y: number,
-     *  sizeModifier: number,
-     *  color: string,
-     * }} props?
+     * @param {{position? :keyof ApplinksPanelOptions.Position,
+     *  panelType?: keyof ApplinksPanelOptions.PanelType
+     *  userIcon?: keyof ApplinksPanelOptions.userIcon
+     *  x?: number,
+     *  y?: number,
+     *  sizeModifier?: number,
+     *  color?: string,
+     * }  } props
      */
-    constructor({ panelType, position, userIcon, x, y, sizeModifier, color }) {
+    constructor({ panelType, position, userIcon, x, y, sizeModifier, color } = {}) {
         this.position = position || ApplinksPanelOptions.Position.bottomLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
