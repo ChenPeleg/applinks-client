@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>My App </title>
     <script src="./main.js" type='module'></script>
+    <script src="./form.js" type='module'></script>
 
     <style>
         body {
@@ -106,7 +107,7 @@
 
         <div id="panel-graphic-options" style="padding: 1rem">
             Panel Options
-            <form class="panel-form">
+            <form class="panel-form" id="panel-form">
                 <div>
 
                     <label for="x">
@@ -130,7 +131,7 @@
 
                 </div>
                 <div>
-                    <button> Save and reload</button>
+                    <button onclick="saveForm()" type="button"> Save and reload</button>
                 </div>
             </form>
         </div>

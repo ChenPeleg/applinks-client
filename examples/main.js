@@ -1,4 +1,5 @@
 import { APPLinksClient } from '../src/client.js';
+import { saveForm } from './form.js';
 
 const appLinkClient = new APPLinksClient('app1Id', {
     useClientPanel: true,
@@ -55,6 +56,7 @@ const userFromLS = checkLSForUSerData();
 if (appLinkClient.innerMethods.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
     updateUserUi(userFromLS);
 }
+window.saveForm = saveForm;
 window.loginToServer = loginToServer;
 window.loadData = loadData;
 window.saveData = saveData;
