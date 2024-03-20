@@ -1,7 +1,7 @@
 import { APPLinksClient, ApplinksPanel } from '../src/client.js';
-import { loadFormData, saveForm } from './form.js';
+import { loadPanelFormData, saveForm } from './form.js';
 
-const formData = loadFormData();
+const formData = loadPanelFormData();
 const appLinkClient = new APPLinksClient('app1Id', {
     useClientPanel: true,
     useLocalStorage: true,

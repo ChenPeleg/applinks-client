@@ -8,7 +8,7 @@ const formDataToObject = (formData) => {
     return data;
 };
 
-export const loadFormData = () => {
+export const loadPanelFormData = () => {
     const data = localStorage.getItem(lsKey);
     if (data) {
         const formData = JSON.parse(data);

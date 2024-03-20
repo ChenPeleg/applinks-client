@@ -19,7 +19,13 @@ class ApplinksPanelOptionsGraphicUtils {
      * @param {string} id
      * @param {ApplinksPanelOptions} panelOption
      **/
-    static getCss = (id, panelOption) => `
+    static getCss = (id, panelOption) => {
+        const popoverLeft = 6 + panelOption.customModifiers.x;
+        const popoverTop =
+            45 + ((panelOption.customModifiers.sizeModifier / 100) * 40 - 40) + panelOption.customModifiers.y;
+        console.log('popoverLeft', popoverLeft);
+
+        return `
     :root {
        --popover-transition-duration: 0.1s;
     }
@@ -55,8 +61,8 @@ class ApplinksPanelOptionsGraphicUtils {
         align-items: center;
         border-radius: 50%;
         background-color: aliceblue;
-        width: 30px;
-        height: 30px;
+        width: ${30 * (panelOption.customModifiers.sizeModifier / 100)}px;
+        height: ${30 * (panelOption.customModifiers.sizeModifier / 100)}px;
         box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1); 
         &:hover {
             box-shadow: 0 0 2px 2px rgba(50, 50, 50, 0.2);
@@ -86,8 +92,8 @@ class ApplinksPanelOptionsGraphicUtils {
         font-family: sans-serif;
         width: 180px; 
         position: absolute;
-        left: 6px;
-        top: 45px;
+        left: ${popoverLeft}px;
+        top: ${popoverTop}px;
         overflow: hidden;
        
        #${id}-popover-login-name {
@@ -254,6 +260,7 @@ body [popover] {
     }
 
     `;
+    };
 }
 
 /**
@@ -291,9 +298,9 @@ class ApplinksPanelOptions {
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
         this.customModifiers = {
-            x: x || 0,
-            y: y || 0,
-            sizeModifier: sizeModifier || 100,
+            x: +x || 0,
+            y: +y || 0,
+            sizeModifier: +sizeModifier || 100,
             color: color || 'lightgray',
         };
     }
@@ -312,7 +319,6 @@ export class ApplinksPanel {
      * @param {ApplinksPanelOptions} [panelOptions]
      */
     constructor(panelOptions) {
-        console.log('ApplinksPanel', panelOptions);
         // @ts-ignore
         this.panelOptions = panelOptions || new ApplinksPanelOptions();
 
