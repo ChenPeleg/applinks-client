@@ -1,5 +1,5 @@
 import { APPLinksClient, ApplinksPanel } from '../src/client.js';
-import { loadPanelFormData, saveForm } from './form.js';
+import { loadPanelFormData, resetColorForm, saveForm } from './form.js';
 
 const formData = loadPanelFormData();
 const appLinkClient = new APPLinksClient('app1Id', {
@@ -62,4 +62,5 @@ window.saveForm = saveForm;
 window.loginToServer = loginToServer;
 window.loadData = loadData;
 window.saveData = saveData;
+window.resetColorForm = resetColorForm;
 window.refreshToken = refreshToken;

@@ -28,5 +28,8 @@ export const saveForm = () => {
     const form = document.querySelector('form#panel-form');
     const formData = new FormData(form);
     localStorage.setItem(lsKey, JSON.stringify(formDataToObject(formData)));
-    console.log('form data', formDataToObject(formData));
+};
+export const resetColorForm = () => {
+    const form = document.querySelector('form#panel-form');
+    form.reset();
 };

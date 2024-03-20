@@ -23,7 +23,6 @@ class ApplinksPanelOptionsGraphicUtils {
         const popoverLeft = 6 + panelOption.customModifiers.x;
         const popoverTop =
             45 + ((panelOption.customModifiers.sizeModifier / 100) * 40 - 40) + panelOption.customModifiers.y;
-        console.log('popoverLeft', popoverLeft);
 
         return `
     :root {
@@ -32,7 +31,7 @@ class ApplinksPanelOptionsGraphicUtils {
     #${id}-wrapper {
         width: ${40 * (panelOption.customModifiers.sizeModifier / 100)}px;
         height: ${40 * (panelOption.customModifiers.sizeModifier / 100)}px;
-        background-color: lightgray;
+        background-color: ${panelOption.customModifiers.color};
         background-opacity: 0.5;
         position: fixed;
         display: flex;
@@ -60,7 +59,7 @@ class ApplinksPanelOptionsGraphicUtils {
         justify-content: center;
         align-items: center;
         border-radius: 50%;
-        background-color: aliceblue;
+        background-color: ${panelOption.customModifiers.iconsBgColor} ;
         width: ${30 * (panelOption.customModifiers.sizeModifier / 100)}px;
         height: ${30 * (panelOption.customModifiers.sizeModifier / 100)}px;
         svg {
@@ -295,6 +294,10 @@ class ApplinksPanelOptions {
      *  y?: number,
      *  sizeModifier?: number,
      *  color?: string,
+     *  mainBgColor?: string,
+     *  secondaryColor?: string,
+     *  iconsBgColor?: string,
+     *  textColor?: string
      * }  } props
      */
     constructor({ panelType, position, userIcon, x, y, sizeModifier, color } = {}) {
@@ -306,6 +309,10 @@ class ApplinksPanelOptions {
             y: +y || 0,
             sizeModifier: +sizeModifier || 100,
             color: color || 'lightgray',
+            mainBgColor: color || 'lightgray',
+            iconsBgColor: color || 'aliceblue',
+            secondaryColor: color || 'lightgray',
+            textColor: color || 'black',
         };
     }
 }
