@@ -307,6 +307,7 @@ export class ApplinksPanel {
      * @param {ApplinksPanelOptions} [panelOptions]
      */
     constructor(panelOptions) {
+        console.log('ApplinksPanel', panelOptions);
         // @ts-ignore
         this.panelOptions = panelOptions || new ApplinksPanelOptions();
 
@@ -1019,9 +1020,9 @@ export class APPLinksClient {
      */
     #clientActionCallBack = (action) => void 0;
 
-    #setUpPanel = (/** @type {{ useClientPanel: any; }} */ options) => {
+    #setUpPanel = (/** @type {{ useClientPanel: any; panelOptions: ApplinksPanelOptions | undefined  }} */ options) => {
         if (options.useClientPanel) {
-            this.#usePanel = new ApplinksPanel();
+            this.#usePanel = new ApplinksPanel(options.panelOptions);
             this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
                 this.#applinksClientPanelAction(action);
         }
