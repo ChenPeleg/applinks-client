@@ -550,9 +550,10 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
 
 /**
  * @typedef ApplinksClientOptions
- * @property { boolean } useDefaultPanel
+ * @property { boolean } useClientPanel
  * @property { boolean } useLocalStorage
  * @property { APPLinkUtils | any } appLinkUtils
+ * @property { ApplinksPanelOptions | any } panelOptions
  */
 export class APPLinkUtils {
     static #configs = {
@@ -810,9 +811,10 @@ export class APPLinksClient {
     constructor(
         appId,
         options = {
-            useDefaultPanel: false,
+            useClientPanel: false,
             useLocalStorage: true,
             appLinkUtils: APPLinkUtils,
+            panelOptions: new ApplinksPanel.Options(),
         }
     ) {
         this.#appId = appId;
@@ -1017,8 +1019,8 @@ export class APPLinksClient {
      */
     #clientActionCallBack = (action) => void 0;
 
-    #setUpPanel = (/** @type {{ useDefaultPanel: any; }} */ options) => {
-        if (options.useDefaultPanel) {
+    #setUpPanel = (/** @type {{ useClientPanel: any; }} */ options) => {
+        if (options.useClientPanel) {
             this.#usePanel = new ApplinksPanel();
             this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
                 this.#applinksClientPanelAction(action);

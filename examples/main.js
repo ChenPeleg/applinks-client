@@ -1,7 +1,7 @@
 import { APPLinksClient } from '../src/client.js';
 
 const appLinkClient = new APPLinksClient('app1Id', {
-    useDefaultPanel: true,
+    useClientPanel: true,
     useLocalStorage: true,
 });
 
