@@ -23,14 +23,15 @@ class ApplinksPanelOptionsGraphicUtils {
         const popoverLeft = 6 + panelOption.customModifiers.x;
         const popoverTop =
             45 + ((panelOption.customModifiers.sizeModifier / 100) * 40 - 40) + panelOption.customModifiers.y;
+        const roundedPanelSizeChange = panelOption.panelType === ApplinksPanelOptions.PanelType.rounded ? -2 : 0;
 
         return `
     :root {
        --popover-transition-duration: 0.1s;
     }
     #${id}-wrapper {
-        width: ${40 * (panelOption.customModifiers.sizeModifier / 100)}px;
-        height: ${40 * (panelOption.customModifiers.sizeModifier / 100)}px;
+        width: ${(40 + roundedPanelSizeChange) * (panelOption.customModifiers.sizeModifier / 100)}px;
+        height: ${(40 + roundedPanelSizeChange) * (panelOption.customModifiers.sizeModifier / 100)}px;
         background-color: ${panelOption.customModifiers.mainBgColor};
         background-opacity: 0.5;
         position: fixed;
@@ -39,7 +40,7 @@ class ApplinksPanelOptionsGraphicUtils {
         align-items: center;
         left: ${panelOption.customModifiers.x}px;
         top: ${panelOption.customModifiers.y}px;
-        border-radius: 0 0 2px 0 ;
+        border-radius: ${panelOption.panelType === ApplinksPanelOptions.PanelType.rounded ? '50%' : '0 0 2px 0'} ;
         z-index: 1000;
          button {
           outline: none;
@@ -284,6 +285,7 @@ class ApplinksPanelOptions {
     };
     static PanelType = {
         classic: 'classic',
+        rounded: 'rounded',
     };
     static userIcon = {
         icon: 'icon',
@@ -327,7 +329,10 @@ class ApplinksPanelOptions {
             mainBgColor = mainBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 20);
             iconsBgColor = iconsBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
             textColor = textColor || ApplinksPanelOptions.makeHexColorLighter(color, -20);
-            menuColor = menuColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
+            // menuColor = menuColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
+        } else if (!mainBgColor && panelType === ApplinksPanelOptions.PanelType.rounded) {
+            mainBgColor = 'transparent';
+            iconsBgColor = 'lightgray';
         }
         this.customModifiers = {
             x: +x || 0,
