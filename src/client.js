@@ -124,7 +124,7 @@ class ApplinksPanelOptionsGraphicUtils {
                     justify-content: center;
                     .applinks-panel-menu-item {
                     
-                    width: 100%;
+                        width: 100%;
                         display: flex;
                         flex-direction: row;
                         align-items: center;
@@ -145,6 +145,11 @@ class ApplinksPanelOptionsGraphicUtils {
                             justify-content: start;
                             gap 10px;
                             padding: 0 20px ;
+                        }
+                        svg {
+                            width: 22px;
+                            height: 22px;
+                            margin-right: 5px;
                         }
                     }
                 }
@@ -300,19 +305,34 @@ class ApplinksPanelOptions {
      *  textColor?: string
      * }  } props
      */
-    constructor({ panelType, position, userIcon, x, y, sizeModifier, color } = {}) {
+    constructor({
+        panelType,
+        secondaryColor,
+        mainBgColor,
+        iconsBgColor,
+        position,
+        userIcon,
+        x,
+        y,
+        sizeModifier,
+        color,
+        textColor,
+    } = {}) {
         this.position = position || ApplinksPanelOptions.Position.bottomLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
+        if (color === '#000000') {
+            color = 'lightgray';
+        }
         this.customModifiers = {
             x: +x || 0,
             y: +y || 0,
             sizeModifier: +sizeModifier || 100,
             color: color || 'lightgray',
-            mainBgColor: color || 'lightgray',
-            iconsBgColor: color || 'aliceblue',
-            secondaryColor: color || 'lightgray',
-            textColor: color || 'black',
+            mainBgColor: mainBgColor || 'lightgray',
+            iconsBgColor: iconsBgColor || 'aliceblue',
+            secondaryColor: secondaryColor || 'lightgray',
+            textColor: textColor || 'black',
         };
     }
 }
