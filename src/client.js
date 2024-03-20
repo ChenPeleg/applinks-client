@@ -330,9 +330,9 @@ class ApplinksPanelOptions {
             iconsBgColor = iconsBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
             textColor = textColor || ApplinksPanelOptions.makeHexColorLighter(color, -20);
             // menuColor = menuColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
-        } else if (!mainBgColor && panelType === ApplinksPanelOptions.PanelType.rounded) {
+        } else if (panelType === ApplinksPanelOptions.PanelType.rounded) {
+            iconsBgColor = mainBgColor || iconsBgColor || 'lightgray';
             mainBgColor = 'transparent';
-            iconsBgColor = 'lightgray';
         }
         this.customModifiers = {
             x: +x || 0,
