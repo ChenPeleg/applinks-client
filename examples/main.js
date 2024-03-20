@@ -1,8 +1,15 @@
-import { APPLinksClient } from '../src/client.js';
+import { APPLinksClient, ApplinksPanel } from '../src/client.js';
+import { loadPanelFormData, resetColorForm, saveForm } from './form.js';
 
+const formData = loadPanelFormData();
 const appLinkClient = new APPLinksClient('app1Id', {
-    useDefaultPanel: true,
+    useClientPanel: true,
     useLocalStorage: true,
+    panelOptions: new ApplinksPanel.Options({
+        ...formData,
+        color: null,
+        panelType: ApplinksPanel.Options.PanelType.rounded,
+    }),
 });
 
 appLinkClient.setClientActionCallBack = (action) => {
@@ -55,7 +62,9 @@ const userFromLS = checkLSForUSerData();
 if (appLinkClient.innerMethods.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
     updateUserUi(userFromLS);
 }
+window.saveForm = saveForm;
 window.loginToServer = loginToServer;
 window.loadData = loadData;
 window.saveData = saveData;
+window.resetColorForm = resetColorForm;
 window.refreshToken = refreshToken;

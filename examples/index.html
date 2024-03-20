@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>My App </title>
     <script src="./main.js" type='module'></script>
-    <script src="./ApplinksPanel.js" type='module'></script>
+    <script src="./form.js" type='module'></script>
 
     <style>
         body {
@@ -17,7 +17,7 @@
             font-size: 30px;
             border-radius: 5px;
             border: none;
-            box-shadow: 0px 0px 4px rgb(76, 75, 90);
+            box-shadow: 0 0 4px rgb(76, 75, 90);
             margin: 20px 10px;
         }
 
@@ -39,6 +39,60 @@
         button.not-active {
             background-color: darkgrey;
         }
+
+        form.panel-form {
+            font-size: 20px;
+
+            input {
+                font-size: 20px;
+            }
+        }
+
+        button.collapsible {
+            margin: 0 20px 0 0;
+            background-color: #eee;
+            color: #444;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .collapsible:after {
+            content: '\02795'; /* Unicode character for "plus" sign (+) */
+            font-size: 13px;
+            color: white;
+            float: right;
+            margin-left: 5px;
+        }
+
+        .collapsible.active:after {
+            content: "\2796"; /* Unicode character for "minus" sign (-) */
+        }
+
+        /* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+        .active, .collapsible:hover {
+            background-color: #ccc;
+        }
+
+        /* Style the collapsible content. Note: hidden by default */
+        .content {
+            padding: 0 18px;
+            background-color: rgba(255, 255, 255, 0.22);
+            max-height: 0;
+            overflow: hidden;
+            /*transition: max-height 0.2s ease-out;*/
+
+            button {
+                margin: 0;
+                font-size: 22px;
+                background-color: #5e5ef6;
+
+            }
+        }
     </style>
 
 
@@ -47,8 +101,46 @@
 
 <div style="height: 400px; max-width: 400px; margin: auto auto; padding: 3em;">
     <h1> IFRAME Test</h1>
+    <button class="collapsible " type="button">Open Collapsible</button>
+    <div class="content ">
+
+
+        <div id="panel-graphic-options" style="padding: 1rem">
+            Panel Options
+            <form class="panel-form" id="panel-form">
+                <div>
+
+                    <label for="x">
+                        X
+                        <input id="x" name="x" style="width: 50px;" type="number"/>
+                    </label>
+                    <label for="y">
+                        Y
+                        <input id="y" name="y" style="width: 50px;" type="number"/>
+                    </label>
+                </div>
+                <div>
+                    <label for="sizeModifier">
+                        Size modifier
+                        <input id="sizeModifier" name="sizeModifier" style="width: 50px;" type="number"/>
+                    </label>
+                    <label for="color">
+                        Color
+                        <input id="color" name="color" style="width: 50px;" type="color"/>
+                    </label>
+
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="saveForm()" type="button"> Save and reload</button>
+                    <button onclick="resetColorForm()" type="button"> reset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div style="height: 20px; width: 10px;"></div>
     <button onclick=" loginToServer()">Login through site</button>
     <div class="user-state big-margins"></div>
+
     <div class="record-action">
         <button class="not-active" id="load-button" onclick=" loadData ()">load data</button>
         <button class="not-active" id="save-button" onclick=" saveData()">save data</button>
@@ -60,5 +152,30 @@
 
 
 </div>
+
+<script>
+
+    var coll = document.getElementsByClassName("collapsible");
+    var i;
+
+    for (i = 0; i < coll.length; i++) {
+        coll[i].classList.toggle("active");
+        const content = coll[i].nextElementSibling;
+        if (content.style.maxHeight) {
+            content.style.maxHeight = null;
+        } else {
+            content.style.maxHeight = content.scrollHeight + "px";
+        }
+        coll[i].addEventListener("click", function () {
+            this.classList.toggle("active");
+            const content = this.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+    }
+</script>
 </body>
 </html>
