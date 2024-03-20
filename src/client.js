@@ -31,7 +31,7 @@ class ApplinksPanelOptionsGraphicUtils {
     #${id}-wrapper {
         width: ${40 * (panelOption.customModifiers.sizeModifier / 100)}px;
         height: ${40 * (panelOption.customModifiers.sizeModifier / 100)}px;
-        background-color: ${panelOption.customModifiers.color};
+        background-color: ${panelOption.customModifiers.mainBgColor};
         background-opacity: 0.5;
         position: fixed;
         display: flex;
@@ -85,16 +85,16 @@ class ApplinksPanelOptionsGraphicUtils {
         font-size: ${panelOption.customModifiers.sizeModifier / 100}rem;
     }
     #${id}-popover {
-        
+        position: fixed;
         padding: 0;
         border-radius: 7px;
         box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
         border: 0px solid rgba(0, 0, 0, 0.2);
-        background-color: #FAF9F6;
+        background-color: ${panelOption.customModifiers.menuColor};
         font-size: 0.9rem;
         font-family: sans-serif;
         width: 180px; 
-        position: absolute;
+       
         left: ${popoverLeft}px;
         top: ${popoverTop}px;
         overflow: hidden;
@@ -135,7 +135,7 @@ class ApplinksPanelOptionsGraphicUtils {
                         transition: none;
                         transition-delay: 0.001s;
                         &:hover {
-                            background-color: #f0f0f0;
+                            background-color: rgba(0,0, 0, 0.07);
                         }
                         div {
                             display: flex;
@@ -176,7 +176,7 @@ class ApplinksPanelOptionsGraphicUtils {
                 &:hover {
                    transition: none;
                    transition-delay: 0s;
-                   background-color: #f0f0f0;
+                   background-color: rgba(0,0, 0, 0.07);;
                 }
             }
         }
@@ -230,7 +230,7 @@ body [popover] {
       border-radius: 7px;
       box-shadow: 0 0 5px 2px rgba(0, 0, 0, 0.2);
       border: 0px solid rgba(0, 0, 0, 0.2);
-      background-color: #FAF9F6;
+      background-color: ${panelOption.customModifiers.menuColor};
       font-size: 0.9rem;
       font-family: sans-serif;
       display: none;
@@ -260,7 +260,7 @@ body [popover] {
                 &:hover {
                    transition: none;
                    transition-delay: 0s;
-                   background-color: #f0f0f0;
+                   background-color: rgba(0,0, 0, 0.07);;
                 }
             }
         }
@@ -300,14 +300,14 @@ class ApplinksPanelOptions {
      *  sizeModifier?: number,
      *  color?: string,
      *  mainBgColor?: string,
-     *  secondaryColor?: string,
+     *  menuColor?: string,
      *  iconsBgColor?: string,
      *  textColor?: string
      * }  } props
      */
     constructor({
         panelType,
-        secondaryColor,
+        menuColor,
         mainBgColor,
         iconsBgColor,
         position,
@@ -323,6 +323,11 @@ class ApplinksPanelOptions {
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
         if (color === '#000000') {
             color = 'lightgray';
+        } else if (color && !mainBgColor) {
+            mainBgColor = mainBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 20);
+            iconsBgColor = iconsBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
+            textColor = textColor || ApplinksPanelOptions.makeHexColorLighter(color, -20);
+            menuColor = menuColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
         }
         this.customModifiers = {
             x: +x || 0,
@@ -331,10 +336,27 @@ class ApplinksPanelOptions {
             color: color || 'lightgray',
             mainBgColor: mainBgColor || 'lightgray',
             iconsBgColor: iconsBgColor || 'aliceblue',
-            secondaryColor: secondaryColor || 'lightgray',
+            menuColor: menuColor || '#FAF9F6',
             textColor: textColor || 'black',
         };
     }
+
+    static makeHexColorLighter = (color, percent) => {
+        let num = parseInt(color.slice(1), 16),
+            amt = Math.round(2.55 * percent),
+            R = (num >> 16) + amt,
+            B = ((num >> 8) & 0x00ff) + amt,
+            G = (num & 0x0000ff) + amt;
+
+        return `#${(
+            0x1000000 +
+            (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+            (B < 255 ? (B < 1 ? 0 : B) : 255) * 0x100 +
+            (G < 255 ? (G < 1 ? 0 : G) : 255)
+        )
+            .toString(16)
+            .slice(1)}`;
+    };
 }
 
 export class ApplinksPanel {
