@@ -5,7 +5,7 @@ const formData = loadFormData();
 const appLinkClient = new APPLinksClient('app1Id', {
     useClientPanel: true,
     useLocalStorage: true,
-    panelOptions: new ApplinksPanel.Options({ formData }),
+    panelOptions: new ApplinksPanel.Options({ ...formData }),
 });
 
 appLinkClient.setClientActionCallBack = (action) => {
