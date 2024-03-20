@@ -1,9 +1,11 @@
-import { APPLinksClient } from '../src/client.js';
-import { saveForm } from './form.js';
+import { APPLinksClient, ApplinksPanel } from '../src/client.js';
+import { loadFormData, saveForm } from './form.js';
 
+const formData = loadFormData();
 const appLinkClient = new APPLinksClient('app1Id', {
     useClientPanel: true,
     useLocalStorage: true,
+    panelOptions: new ApplinksPanel.Options({ formData }),
 });
 
 appLinkClient.setClientActionCallBack = (action) => {
