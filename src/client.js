@@ -1042,11 +1042,9 @@ export class APPLinksClient {
      */
     debounceSave = (dataToSave) => {
         if (this.#lastSavedRecordTime) {
-            console.log('clearing timeout');
             clearTimeout(this.#lastSavedRecordTime);
         }
         this.#lastSavedRecordTime = setTimeout(() => {
-            console.log('saving record');
             this.savedRecord(dataToSave).then();
         }, this.#debounceTime);
     };
