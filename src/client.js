@@ -85,7 +85,7 @@ class ApplinksPanelOptionsGraphicUtils {
         color : black;
         padding-top: ${
             panelOption.panelType === ApplinksPanelOptions.PanelType.rounded
-                ? (panelOption.customModifiers.sizeModifier / 100) * 2
+                ? (panelOption.customModifiers.sizeModifier / 100) * 1.3
                 : '0'
         }px;
         font-size: ${(panelOption.customModifiers.sizeModifier / 100) * textRoundedModifier}rem;
@@ -330,7 +330,8 @@ class ApplinksPanelOptions {
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
         if (color === '#000000') {
             color = 'lightgray';
-        } else if (color && !mainBgColor && panelType !== ApplinksPanelOptions.PanelType.rounded) {
+        }
+        if (color && !mainBgColor && panelType !== ApplinksPanelOptions.PanelType.rounded) {
             mainBgColor = mainBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 20);
             iconsBgColor = iconsBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
             textColor = textColor || ApplinksPanelOptions.makeHexColorLighter(color, -20);
