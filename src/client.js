@@ -320,7 +320,7 @@ class ApplinksPanelOptions {
         color,
         textColor,
     } = {}) {
-        this.position = position || ApplinksPanelOptions.Position.bottomLeft;
+        this.position = position || ApplinksPanelOptions.Position.topLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
         if (color === '#000000') {
@@ -346,7 +346,7 @@ class ApplinksPanelOptions {
         };
     }
 
-    static makeHexColorLighter = (color, percent) => {
+    static makeHexColorLighter = (/** @type {string} */ color, /** @type {number} */ percent) => {
         let num = parseInt(color.slice(1), 16),
             amt = Math.round(2.55 * percent),
             R = (num >> 16) + amt,
@@ -368,16 +368,16 @@ export class ApplinksPanel {
     static Options = ApplinksPanelOptions;
     #status = 'not-logged-in';
     #applinksPanelId = 'app-links-Panel-Id';
-    /** @type {HTMLDivElement}     */
-    #panelElement = null;
 
     #returnToUserInterval = null;
+
+    /** @type {HTMLDivElement}     */
+    #panelElement;
 
     /**
      * @param {ApplinksPanelOptions} [panelOptions]
      */
     constructor(panelOptions) {
-        // @ts-ignore
         this.panelOptions = panelOptions || new ApplinksPanelOptions();
 
         this.#panelElement = this.#createPanelElement();
@@ -385,8 +385,12 @@ export class ApplinksPanel {
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId, this.panelOptions));
     }
 
-    actionCallBack = (action) => {};
-    #commitAction = (action) => {
+    actionCallBack = (/** @type {string} */ action) => {
+        if (action === 'logout') {
+            console.log('logout');
+        }
+    };
+    #commitAction = (/** @type {string} */ action) => {
         this.actionCallBack(action);
     };
 
@@ -397,7 +401,7 @@ export class ApplinksPanel {
      */
     setStatus(status, userData = null) {
         const allIcons = ['user-logged', 'cloud-error', 'cloud-complete', 'cloud-update', 'unloged-user'];
-        const showOnly = (icon) => {
+        const showOnly = (/** @type {string} */ icon) => {
             allIcons.forEach((i) => {
                 const el = document.getElementById(`${this.#applinksPanelId}-${i}`);
                 if (!el) {
@@ -471,11 +475,12 @@ export class ApplinksPanel {
         }
     }
 
-    #addCSS = (css) => {
+    #addCSS = (/** @type {string} */ css) => {
         document.head.appendChild(document.createElement('style')).innerHTML = css;
     };
 
     #createPanelElement() {
+        if (this.#panelElement) return;
         const element = document.createElement('div');
 
         const userIcon =
@@ -568,7 +573,7 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             }
         });
 
-        document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', (ev) => {
+        document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', () => {
             // @ts-ignore
             popover.hidePopover();
         });
@@ -1087,7 +1092,9 @@ export class APPLinksClient {
      * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
      * @return {*}
      */
-    #clientActionCallBack = (action) => void 0;
+    #clientActionCallBack = (action) => {
+        action;
+    };
 
     #setUpPanel = (/** @type {{ useClientPanel: any; panelOptions: ApplinksPanelOptions | undefined  }} */ options) => {
         if (options.useClientPanel) {

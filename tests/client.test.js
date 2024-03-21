@@ -1,9 +1,8 @@
-import {APPLinksClient, APPLinkUtils} from '../src/client.js';
-import {fetchMock} from '../utils/testing/mocks/fetch.mock.js';
-import {ApplinksUtilsMock} from './mocks/ApplinksUtils.mock.js';
-import {LocalStorageMock} from '../utils/testing/mocks/localStorage.mock.js';
+import { APPLinksClient, APPLinkUtils } from '../src/client.js';
+import { fetchMock } from '../utils/testing/mocks/fetch.mock.js';
+import { ApplinksUtilsMock } from './mocks/ApplinksUtils.mock.js';
+import { LocalStorageMock } from '../utils/testing/mocks/localStorage.mock.js';
 
-/** @type {UserData}*/
 const userData = {
     token: 'deadbeef',
     id: 'Smith',
