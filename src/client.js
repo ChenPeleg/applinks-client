@@ -24,7 +24,7 @@ class ApplinksPanelOptionsGraphicUtils {
         const popoverTop =
             45 + ((panelOption.customModifiers.sizeModifier / 100) * 40 - 40) + panelOption.customModifiers.y;
         const roundedPanelSizeChange = panelOption.panelType === ApplinksPanelOptions.PanelType.rounded ? -2 : 0;
-
+        const textRoundedModifier = panelOption.panelType === ApplinksPanelOptions.PanelType.rounded ? 0.7 : 1;
         return `
     :root {
        --popover-transition-duration: 0.1s;
@@ -83,7 +83,12 @@ class ApplinksPanelOptionsGraphicUtils {
   
     #${id}-user-initials {
         color : black;
-        font-size: ${panelOption.customModifiers.sizeModifier / 100}rem;
+        padding-top: ${
+            panelOption.panelType === ApplinksPanelOptions.PanelType.rounded
+                ? (panelOption.customModifiers.sizeModifier / 100) * 2
+                : '0'
+        }px;
+        font-size: ${(panelOption.customModifiers.sizeModifier / 100) * textRoundedModifier}rem;
     }
     #${id}-popover {
         position: fixed;
@@ -325,13 +330,13 @@ class ApplinksPanelOptions {
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
         if (color === '#000000') {
             color = 'lightgray';
-        } else if (color && !mainBgColor) {
+        } else if (color && !mainBgColor && panelType !== ApplinksPanelOptions.PanelType.rounded) {
             mainBgColor = mainBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 20);
             iconsBgColor = iconsBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
             textColor = textColor || ApplinksPanelOptions.makeHexColorLighter(color, -20);
             // menuColor = menuColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
         } else if (panelType === ApplinksPanelOptions.PanelType.rounded) {
-            iconsBgColor = mainBgColor || iconsBgColor || 'lightgray';
+            iconsBgColor = mainBgColor || iconsBgColor || color || 'lightgray';
             mainBgColor = 'transparent';
         }
         this.customModifiers = {

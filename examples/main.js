@@ -7,7 +7,6 @@ const appLinkClient = new APPLinksClient('app1Id', {
     useLocalStorage: true,
     panelOptions: new ApplinksPanel.Options({
         ...formData,
-        color: null,
         panelType: ApplinksPanel.Options.PanelType.rounded,
     }),
 });
