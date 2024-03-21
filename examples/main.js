@@ -42,7 +42,10 @@ const loadData = async () => {
 const saveData = async () => {
     const data = { dataText: document.querySelector('#data-input').value };
     const result = /** @type { any }*/ await appLinkClient.savedRecord(data);
-    console.log('save Data', result);
+};
+const debounceSaveData = () => {
+    const data = { dataText: document.querySelector('#data-input').value };
+    appLinkClient.debounceSave(data);
 };
 const refreshToken = async () => {
     const result = await appLinkClient.innerMethods.requestTokenRefresh();
@@ -65,5 +68,7 @@ window.saveForm = saveForm;
 window.loginToServer = loginToServer;
 window.loadData = loadData;
 window.saveData = saveData;
+window.debounceSaveData = debounceSaveData;
+
 window.resetColorForm = resetColorForm;
 window.refreshToken = refreshToken;
