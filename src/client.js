@@ -946,6 +946,16 @@ export class APPLinksClient {
         return this.#UserData ? APPLinksClient.Messages.UserIsSet : APPLinksClient.Messages.UserNotSet;
     }
 
+    get user() {
+        return this.#UserData
+            ? {
+                  username: this.#UserData.username,
+                  fullName: this.#UserData.fullName,
+                  id: this.#UserData.id,
+              }
+            : null;
+    }
+
     async loadSavedRecords() {
         if (!this.#validateUserData(this.#UserData)) {
             this.#emitAction({
