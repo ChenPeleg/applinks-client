@@ -61,7 +61,7 @@ const checkLSForUSerData = () => {
 };
 const userFromLS = checkLSForUSerData();
 
-if (appLinkClient.innerMethods.setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
+if (appLinkClient.innerMethods.setUserData(userFromLS) === APPLinksClient.Messages.UserIsSet) {
     updateUserUi(userFromLS);
 }
 window.saveForm = saveForm;

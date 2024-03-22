@@ -856,8 +856,8 @@ export class APPLinkUtils {
 
 export class APPLinksClient {
     static Messages = {
-        UserWasSet: 'UserWasSet',
-        UserWasNotSet: 'UserWasNotSet',
+        UserIsSet: 'UserWasSet',
+        UserNotSet: 'UserWasNotSet',
     };
 
     static AuthError = APPLinkUtils.AuthError;
@@ -912,7 +912,7 @@ export class APPLinksClient {
 
         if (options.useLocalStorage) {
             const result = this.#tryToUpdateUserDataFromLocalStorage();
-            if (result.message === APPLinksClient.Messages.UserWasSet) {
+            if (result.message === APPLinksClient.Messages.UserIsSet) {
                 this.#updatePanelStatus('logged-in');
             }
         }
@@ -943,7 +943,7 @@ export class APPLinksClient {
     }
 
     get userStatus() {
-        return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
+        return this.#UserData ? APPLinksClient.Messages.UserIsSet : APPLinksClient.Messages.UserNotSet;
     }
 
     async loadSavedRecords() {
@@ -1153,9 +1153,9 @@ export class APPLinksClient {
         if (userData.fullName && userData.id && userData.username && userData.token) {
             this.#UserData = { ...userData };
             this.#updatePanelStatus('logged-in');
-            return APPLinksClient.Messages.UserWasSet;
+            return APPLinksClient.Messages.UserIsSet;
         }
-        return APPLinksClient.Messages.UserWasNotSet;
+        return APPLinksClient.Messages.UserNotSet;
     }
 
     /**
@@ -1198,10 +1198,10 @@ export class APPLinksClient {
         };
         const userFromLS = checkLSForUSerData();
 
-        if (this.#setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
-            return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
+        if (this.#setUserData(userFromLS) === APPLinksClient.Messages.UserIsSet) {
+            return { user: userFromLS, message: APPLinksClient.Messages.UserIsSet };
         }
-        return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
+        return { user: null, message: APPLinksClient.Messages.UserNotSet };
     }
 
     async #requestTokenRefresh() {
