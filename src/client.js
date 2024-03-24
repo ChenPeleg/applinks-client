@@ -1061,14 +1061,20 @@ export class APPLinksClient {
     /** @type {()=> Promise<LoginData>}*/
     async LoginThroughAppLinks() {
         const screenWidth = window.innerWidth;
-        const isMobile = screenWidth < 500 || true;
+        const screenHeight = window.innerHeight;
 
-        const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh; height :600px; display: flex; flex-direction: row;justify-content: center">
-            <iframe style="width: ${
-                isMobile ? '1000px' : '500px'
-            };height :600px;border:none;" id="login-i-frame" src="${this.#util.htmlLoginUrl}"></iframe> </div>`;
+        const isMobile = screenWidth < 500;
 
-        const newLoginWindow = window.open('', '', 'width=500,height=700');
+        const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh;  display: flex; flex-direction: row;justify-content: center">
+            <iframe allowtransparency="true"  style="width: 100% ; height: 100% ;border:none; background: #FFFFFF;" id="login-i-frame" src="${
+                this.#util.htmlLoginUrl
+            }"></iframe> </div>`;
+
+        const newLoginWindow = window.open(
+            '',
+            '',
+            `width=${isMobile ? screenWidth : '500'},height=${isMobile ? screenHeight : '700'}`
+        );
         this.#newLoginWindowRef = newLoginWindow;
         const doc = newLoginWindow.document;
         doc.open();
