@@ -1,9 +1,8 @@
-import {APPLinksClient, APPLinkUtils} from '../src/client.js';
-import {fetchMock} from '../utils/testing/mocks/fetch.mock.js';
-import {ApplinksUtilsMock} from './mocks/ApplinksUtils.mock.js';
-import {LocalStorageMock} from '../utils/testing/mocks/localStorage.mock.js';
+import { APPLinksClient, APPLinkUtils } from '../src/client.js';
+import { fetchMock } from '../utils/testing/mocks/fetch.mock.js';
+import { ApplinksUtilsMock } from './mocks/ApplinksUtils.mock.js';
+import { LocalStorageMock } from '../utils/testing/mocks/localStorage.mock.js';
 
-/** @type {UserData}*/
 const userData = {
     token: 'deadbeef',
     id: 'Smith',
@@ -32,14 +31,14 @@ describe('client js class', () => {
         it('sets user data correctly when all user data exists', () => {
             const client = new APPLinksClient(appName);
             const result = client.innerMethods.setUserData(userData);
-            expect(result).toBe(APPLinksClient.Messages.UserWasSet);
-            expect(client.userStatus).toBe(APPLinksClient.Messages.UserWasSet);
+            expect(result).toBe(APPLinksClient.Messages.UserIsSet);
+            expect(client.userStatus).toBe(APPLinksClient.Messages.UserIsSet);
         });
         it('doesnt set user data if some data missing ', () => {
             const client = new APPLinksClient(appName);
             const badUSerData = { ...userData, token: false };
             const result = client.innerMethods.setUserData(badUSerData);
-            expect(result).toBe(APPLinksClient.Messages.UserWasNotSet);
+            expect(result).toBe(APPLinksClient.Messages.UserNotSet);
         });
     });
     describe('loading data', async () => {

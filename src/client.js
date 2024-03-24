@@ -24,7 +24,7 @@ class ApplinksPanelOptionsGraphicUtils {
         const popoverTop =
             45 + ((panelOption.customModifiers.sizeModifier / 100) * 40 - 40) + panelOption.customModifiers.y;
         const roundedPanelSizeChange = panelOption.panelType === ApplinksPanelOptions.PanelType.rounded ? -2 : 0;
-
+        const textRoundedModifier = panelOption.panelType === ApplinksPanelOptions.PanelType.rounded ? 0.7 : 1;
         return `
     :root {
        --popover-transition-duration: 0.1s;
@@ -83,7 +83,12 @@ class ApplinksPanelOptionsGraphicUtils {
   
     #${id}-user-initials {
         color : black;
-        font-size: ${panelOption.customModifiers.sizeModifier / 100}rem;
+        padding-top: ${
+            panelOption.panelType === ApplinksPanelOptions.PanelType.rounded
+                ? (panelOption.customModifiers.sizeModifier / 100) * 1.3
+                : '0'
+        }px;
+        font-size: ${(panelOption.customModifiers.sizeModifier / 100) * textRoundedModifier}rem;
     }
     #${id}-popover {
         position: fixed;
@@ -320,18 +325,19 @@ class ApplinksPanelOptions {
         color,
         textColor,
     } = {}) {
-        this.position = position || ApplinksPanelOptions.Position.bottomLeft;
+        this.position = position || ApplinksPanelOptions.Position.topLeft;
         this.panelType = panelType || ApplinksPanelOptions.PanelType.classic;
         this.userIcon = userIcon || ApplinksPanelOptions.userIcon.initials;
         if (color === '#000000') {
             color = 'lightgray';
-        } else if (color && !mainBgColor) {
+        }
+        if (color && !mainBgColor && panelType !== ApplinksPanelOptions.PanelType.rounded) {
             mainBgColor = mainBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 20);
             iconsBgColor = iconsBgColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
             textColor = textColor || ApplinksPanelOptions.makeHexColorLighter(color, -20);
             // menuColor = menuColor || ApplinksPanelOptions.makeHexColorLighter(color, 10);
         } else if (panelType === ApplinksPanelOptions.PanelType.rounded) {
-            iconsBgColor = mainBgColor || iconsBgColor || 'lightgray';
+            iconsBgColor = mainBgColor || iconsBgColor || color || 'lightgray';
             mainBgColor = 'transparent';
         }
         this.customModifiers = {
@@ -346,7 +352,7 @@ class ApplinksPanelOptions {
         };
     }
 
-    static makeHexColorLighter = (color, percent) => {
+    static makeHexColorLighter = (/** @type {string} */ color, /** @type {number} */ percent) => {
         let num = parseInt(color.slice(1), 16),
             amt = Math.round(2.55 * percent),
             R = (num >> 16) + amt,
@@ -368,16 +374,16 @@ export class ApplinksPanel {
     static Options = ApplinksPanelOptions;
     #status = 'not-logged-in';
     #applinksPanelId = 'app-links-Panel-Id';
-    /** @type {HTMLDivElement}     */
-    #panelElement = null;
 
     #returnToUserInterval = null;
+
+    /** @type {HTMLDivElement}     */
+    #panelElement;
 
     /**
      * @param {ApplinksPanelOptions} [panelOptions]
      */
     constructor(panelOptions) {
-        // @ts-ignore
         this.panelOptions = panelOptions || new ApplinksPanelOptions();
 
         this.#panelElement = this.#createPanelElement();
@@ -385,8 +391,11 @@ export class ApplinksPanel {
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId, this.panelOptions));
     }
 
-    actionCallBack = (action) => {};
-    #commitAction = (action) => {
+    actionCallBack = (/** @type {string} */ action) => {
+        if (action === 'logout') {
+        }
+    };
+    #commitAction = (/** @type {string} */ action) => {
         this.actionCallBack(action);
     };
 
@@ -397,7 +406,7 @@ export class ApplinksPanel {
      */
     setStatus(status, userData = null) {
         const allIcons = ['user-logged', 'cloud-error', 'cloud-complete', 'cloud-update', 'unloged-user'];
-        const showOnly = (icon) => {
+        const showOnly = (/** @type {string} */ icon) => {
             allIcons.forEach((i) => {
                 const el = document.getElementById(`${this.#applinksPanelId}-${i}`);
                 if (!el) {
@@ -471,11 +480,12 @@ export class ApplinksPanel {
         }
     }
 
-    #addCSS = (css) => {
+    #addCSS = (/** @type {string} */ css) => {
         document.head.appendChild(document.createElement('style')).innerHTML = css;
     };
 
     #createPanelElement() {
+        if (this.#panelElement) return;
         const element = document.createElement('div');
 
         const userIcon =
@@ -568,7 +578,7 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
             }
         });
 
-        document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', (ev) => {
+        document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', () => {
             // @ts-ignore
             popover.hidePopover();
         });
@@ -622,6 +632,7 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
  * @typedef ApplinksClientOptions
  * @property { boolean } useClientPanel
  * @property { boolean } useLocalStorage
+ * @property { number } debaunceTime
  * @property { APPLinkUtils | any } appLinkUtils
  * @property { ApplinksPanelOptions | any } panelOptions
  */
@@ -844,8 +855,8 @@ export class APPLinkUtils {
 
 export class APPLinksClient {
     static Messages = {
-        UserWasSet: 'UserWasSet',
-        UserWasNotSet: 'UserWasNotSet',
+        UserIsSet: 'UserWasSet',
+        UserNotSet: 'UserWasNotSet',
     };
 
     static AuthError = APPLinkUtils.AuthError;
@@ -874,6 +885,9 @@ export class APPLinksClient {
     /** @type {UserData | null} */
     #UserData;
 
+    #debounceTime = 5000;
+    #lastSavedRecordTime = null;
+
     /**
      * @param {string} appId
      * @param {ApplinksClientOptions} options
@@ -881,6 +895,7 @@ export class APPLinksClient {
     constructor(
         appId,
         options = {
+            debaunceTime: 5000,
             useClientPanel: false,
             useLocalStorage: true,
             appLinkUtils: APPLinkUtils,
@@ -890,10 +905,13 @@ export class APPLinksClient {
         this.#appId = appId;
         this.#options = options;
         this.#setUpPanel(options);
+        if (options.debaunceTime) {
+            this.#debounceTime = options.debaunceTime;
+        }
 
         if (options.useLocalStorage) {
             const result = this.#tryToUpdateUserDataFromLocalStorage();
-            if (result.message === APPLinksClient.Messages.UserWasSet) {
+            if (result.message === APPLinksClient.Messages.UserIsSet) {
                 this.#updatePanelStatus('logged-in');
             }
         }
@@ -924,7 +942,17 @@ export class APPLinksClient {
     }
 
     get userStatus() {
-        return this.#UserData ? APPLinksClient.Messages.UserWasSet : APPLinksClient.Messages.UserWasNotSet;
+        return this.#UserData ? APPLinksClient.Messages.UserIsSet : APPLinksClient.Messages.UserNotSet;
+    }
+
+    get user() {
+        return this.#UserData
+            ? {
+                  username: this.#UserData.username,
+                  fullName: this.#UserData.fullName,
+                  id: this.#UserData.id,
+              }
+            : null;
     }
 
     async loadSavedRecords() {
@@ -1018,12 +1046,27 @@ export class APPLinksClient {
         return body;
     }
 
+    /**
+     * @param {Record<string, any>} dataToSave
+     */
+    debounceSave = (dataToSave) => {
+        if (this.#lastSavedRecordTime) {
+            clearTimeout(this.#lastSavedRecordTime);
+        }
+        this.#lastSavedRecordTime = setTimeout(() => {
+            this.savedRecord(dataToSave).then();
+        }, this.#debounceTime);
+    };
+
     /** @type {()=> Promise<LoginData>}*/
     async LoginThroughAppLinks() {
+        const screenWidth = window.innerWidth;
+        const isMobile = screenWidth < 500 || true;
+
         const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh; height :600px; display: flex; flex-direction: row;justify-content: center">
-            <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
-                this.#util.htmlLoginUrl
-            }"></iframe> </div>`;
+            <iframe style="width: ${
+                isMobile ? '1000px' : '500px'
+            };height :600px;border:none;" id="login-i-frame" src="${this.#util.htmlLoginUrl}"></iframe> </div>`;
 
         const newLoginWindow = window.open('', '', 'width=500,height=700');
         this.#newLoginWindowRef = newLoginWindow;
@@ -1071,23 +1114,25 @@ export class APPLinksClient {
 
         if (status !== 200) {
             this.#emitAction({
-                type: APPLinksClient.ApplinksClientEvents.UserLoggedOut,
+                type: APPLinksClient.ApplinksClientEvents.UserLogoutFailed,
                 data: this.#UserData,
             });
             throw new Error('logout failed');
         }
+        this.#UserData = null;
         this.#emitAction({
-            type: APPLinksClient.ApplinksClientEvents.UserLogoutFailed,
+            type: APPLinksClient.ApplinksClientEvents.UserLoggedOut,
             data: this.#UserData,
         });
-        this.#UserData = null;
     }
 
     /**
      * @param  {{type : APPLinksClient.ApplinksClientEvents [keyof APPLinksClient.ApplinksClientEvents], data: any}} action
      * @return {*}
      */
-    #clientActionCallBack = (action) => void 0;
+    #clientActionCallBack = (action) => {
+        action;
+    };
 
     #setUpPanel = (/** @type {{ useClientPanel: any; panelOptions: ApplinksPanelOptions | undefined  }} */ options) => {
         if (options.useClientPanel) {
@@ -1120,9 +1165,9 @@ export class APPLinksClient {
         if (userData.fullName && userData.id && userData.username && userData.token) {
             this.#UserData = { ...userData };
             this.#updatePanelStatus('logged-in');
-            return APPLinksClient.Messages.UserWasSet;
+            return APPLinksClient.Messages.UserIsSet;
         }
-        return APPLinksClient.Messages.UserWasNotSet;
+        return APPLinksClient.Messages.UserNotSet;
     }
 
     /**
@@ -1165,10 +1210,10 @@ export class APPLinksClient {
         };
         const userFromLS = checkLSForUSerData();
 
-        if (this.#setUserData(userFromLS) === APPLinksClient.Messages.UserWasSet) {
-            return { user: userFromLS, message: APPLinksClient.Messages.UserWasSet };
+        if (this.#setUserData(userFromLS) === APPLinksClient.Messages.UserIsSet) {
+            return { user: userFromLS, message: APPLinksClient.Messages.UserIsSet };
         }
-        return { user: null, message: APPLinksClient.Messages.UserWasNotSet };
+        return { user: null, message: APPLinksClient.Messages.UserNotSet };
     }
 
     async #requestTokenRefresh() {
