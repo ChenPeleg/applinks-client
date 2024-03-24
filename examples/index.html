@@ -160,13 +160,13 @@
     var i;
 
     for (i = 0; i < coll.length; i++) {
-        coll[i].classList.toggle("active");
-        const content = coll[i].nextElementSibling;
-        if (content.style.maxHeight) {
-            content.style.maxHeight = null;
-        } else {
-            content.style.maxHeight = content.scrollHeight + "px";
-        }
+        // coll[i].classList.toggle("active");
+        // const content = coll[i].nextElementSibling;
+        // if (content.style.maxHeight) {
+        //     content.style.maxHeight = null;
+        // } else {
+        //     content.style.maxHeight = content.scrollHeight + "px";
+        // }
         coll[i].addEventListener("click", function () {
             this.classList.toggle("active");
             const content = this.nextElementSibling;
