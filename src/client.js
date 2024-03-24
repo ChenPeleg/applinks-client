@@ -393,7 +393,6 @@ export class ApplinksPanel {
 
     actionCallBack = (/** @type {string} */ action) => {
         if (action === 'logout') {
-            console.log('logout');
         }
     };
     #commitAction = (/** @type {string} */ action) => {
@@ -1061,10 +1060,13 @@ export class APPLinksClient {
 
     /** @type {()=> Promise<LoginData>}*/
     async LoginThroughAppLinks() {
+        const screenWidth = window.innerWidth;
+        const isMobile = screenWidth < 500 || true;
+
         const html = `<div id="iframe-container" style="width: 100%; overflow: hidden;max-height: 95vh; height :600px; display: flex; flex-direction: row;justify-content: center">
-            <iframe style="width: 500px;height :600px;border:none;" id="login-i-frame" src="${
-                this.#util.htmlLoginUrl
-            }"></iframe> </div>`;
+            <iframe style="width: ${
+                isMobile ? '1000px' : '500px'
+            };height :600px;border:none;" id="login-i-frame" src="${this.#util.htmlLoginUrl}"></iframe> </div>`;
 
         const newLoginWindow = window.open('', '', 'width=500,height=700');
         this.#newLoginWindowRef = newLoginWindow;
@@ -1112,16 +1114,16 @@ export class APPLinksClient {
 
         if (status !== 200) {
             this.#emitAction({
-                type: APPLinksClient.ApplinksClientEvents.UserLoggedOut,
+                type: APPLinksClient.ApplinksClientEvents.UserLogoutFailed,
                 data: this.#UserData,
             });
             throw new Error('logout failed');
         }
+        this.#UserData = null;
         this.#emitAction({
-            type: APPLinksClient.ApplinksClientEvents.UserLogoutFailed,
+            type: APPLinksClient.ApplinksClientEvents.UserLoggedOut,
             data: this.#UserData,
         });
-        this.#UserData = null;
     }
 
     /**
