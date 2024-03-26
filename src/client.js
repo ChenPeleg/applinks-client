@@ -47,12 +47,12 @@ class ApplinksPanelOptionsGraphicUtils {
           border: none;
         }
     }
-    
+
     #${id}-main-user-button {
         display: flex;
         justify-content: center;
         align-items: center;
-      
+
     }
     .${id}-main-icon {
         cursor: pointer;
@@ -67,20 +67,20 @@ class ApplinksPanelOptionsGraphicUtils {
           width: ${20 * (panelOption.customModifiers.sizeModifier / 100)}px;
           height: ${20 * (panelOption.customModifiers.sizeModifier / 100)}px;
         }
-        box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1); 
+        box-shadow: 0 0 2px 0px rgba(0, 0, 0, 0.1);
         &:hover {
             box-shadow: 0 0 2px 2px rgba(50, 50, 50, 0.2);
         }
-        transition: box-shadow 0.2s, opacity 0.2s; 
+        transition: box-shadow 0.2s, opacity 0.2s;
     }
     .${id}-main-icon:not(#${id}-cloud-complete) svg {
-        transition: box-shadow 0.2s, opacity 0.05s; 
+        transition: box-shadow 0.2s, opacity 0.05s;
         opacity: 0;
      }
     .${id}-main-icon.active:not(#${id}-cloud-complete) svg {
        opacity: 1;
     }
-  
+
     #${id}-user-initials {
         color : black;
         padding-top: ${
@@ -99,12 +99,12 @@ class ApplinksPanelOptionsGraphicUtils {
         background-color: ${panelOption.customModifiers.menuColor};
         font-size: 0.9rem;
         font-family: sans-serif;
-        width: 180px; 
-       
+        width: 180px;
+
         left: ${popoverLeft}px;
         top: ${popoverTop}px;
         overflow: hidden;
-       
+
        #${id}-popover-login-name {
          padding: 0px 20px;
          font-weight: bold;
@@ -117,9 +117,9 @@ class ApplinksPanelOptionsGraphicUtils {
                 flex-direction: column;
                 align-items: start;
                 justify-content: center;
-             
+
                 span {
-                   
+
                     margin-bottom: 10px;
                 }
                 .applinks-panel-menu {
@@ -129,13 +129,13 @@ class ApplinksPanelOptionsGraphicUtils {
                     align-items: center;
                     justify-content: center;
                     .applinks-panel-menu-item {
-                    
+
                         width: 100%;
                         display: flex;
                         flex-direction: row;
                         align-items: center;
-                        
-                      
+
+
                         padding: 10px 5px;
                         cursor: pointer;
                         transition: none;
@@ -159,13 +159,13 @@ class ApplinksPanelOptionsGraphicUtils {
                         }
                     }
                 }
-                
+
         }
         .close-container{
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 0px; 
+            padding-bottom: 0px;
             div.close-container-button {
                 margin : 5px;
                 padding: 5px;
@@ -188,10 +188,10 @@ class ApplinksPanelOptionsGraphicUtils {
         }
     }
     #${id}-popover-close {
-    
+
     }
-    
-    
+
+
 #${id}-popover[popover]:popover-open {
 
     opacity: 1;
@@ -204,9 +204,9 @@ body [popover] {
 
 #${id}-popover[popover] {
 
- 
+
     /* Final state of the exit animation */
-    opacity: 0; 
+    opacity: 0;
     transform: scale(.8);
 
     transition:
@@ -244,12 +244,12 @@ body [popover] {
       .message-text {
         padding: 10px 20px;
       }
-      
+
       .close-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 0px; 
+            padding-bottom: 0px;
             div.close-container-button {
                 margin : 5px;
                 padding: 5px;
@@ -270,7 +270,7 @@ body [popover] {
                 }
             }
         }
-      
+
     }
 
     `;
@@ -341,8 +341,9 @@ class ApplinksPanelOptions {
             mainBgColor = 'transparent';
         }
         this.customModifiers = {
-            x: +x || 0,
-            y: +y || 0,
+            // @ts-ignore
+            x: +x || 0, // @ts-ignore
+            y: +y || 0, // @ts-ignore
             sizeModifier: +sizeModifier || 100,
             color: color || 'lightgray',
             mainBgColor: mainBgColor || 'lightgray',
@@ -385,7 +386,7 @@ export class ApplinksPanel {
      */
     constructor(panelOptions) {
         this.panelOptions = panelOptions || new ApplinksPanelOptions();
-
+        // @ts-ignore
         this.#panelElement = this.#createPanelElement();
 
         this.#addCSS(ApplinksPanelOptionsGraphicUtils.getCss(this.#applinksPanelId, this.panelOptions));
@@ -404,6 +405,7 @@ export class ApplinksPanel {
      * @param {AppLinkPanelStatusDisplay} status
      * @param {UserData} [userData]
      */
+    // @ts-ignore
     setStatus(status, userData = null) {
         const allIcons = ['user-logged', 'cloud-error', 'cloud-complete', 'cloud-update', 'unloged-user'];
         const showOnly = (/** @type {string} */ icon) => {
@@ -435,7 +437,9 @@ export class ApplinksPanel {
                 break;
             case 'updateComplete':
                 showOnly('cloud-complete');
+                // @ts-ignore
                 clearTimeout(this.#returnToUserInterval);
+                // @ts-ignore
                 this.#returnToUserInterval = setTimeout(() => {
                     this.setStatus('logged-in');
                 }, 2000);
@@ -452,7 +456,7 @@ export class ApplinksPanel {
                 // @ts-ignore
                 errorMessageElement.style.display = 'none';
 
-                if (userInitials.innerHTML) {
+                if (userInitials?.innerHTML) {
                     return;
                 }
 
@@ -461,9 +465,12 @@ export class ApplinksPanel {
                     .split(' ')
                     .map((n) => n[0])
                     .join('');
-                userInitials.innerHTML = initials;
-
-                userNameInMenu.innerHTML = `${name}`;
+                if (userInitials) {
+                    userInitials.innerHTML = initials;
+                }
+                if (userNameInMenu) {
+                    userNameInMenu.innerHTML = `${name}`;
+                }
 
                 break;
             case 'error-please-relogin':
@@ -494,40 +501,40 @@ export class ApplinksPanel {
                 : ApplinksPanelOptionsGraphicUtils.userLoggedIcon;
 
         const innerHtml = `
- 
+
         <div id="${this.#applinksPanelId}-wrapper" >
             <div popover  id="${this.#applinksPanelId}-popover">
-        
+
             <div class="close-container">
              <div> <div id="${this.#applinksPanelId}-popover-login-name"> Logged in </div> </div>
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-popover-close">${
             ApplinksPanelOptionsGraphicUtils.xIcon
         }</div>
             </div>
-           
-            <div class="applinks-panel-popover-content">  
-                
-                <div class="applinks-panel-menu">   
-                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-account"> 
+
+            <div class="applinks-panel-popover-content">
+
+                <div class="applinks-panel-menu">
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-account">
                  <div> ${ApplinksPanelOptionsGraphicUtils.settingsIcon} Settings</div> </div>
-                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-help"> 
+                <div role="button"  class="applinks-panel-menu-item" id="${this.#applinksPanelId}-button-help">
                 <div> ${ApplinksPanelOptionsGraphicUtils.helpIcon} Support </div> </div>
                 <div role="button"  class="applinks-panel-menu-item" id="${
                     this.#applinksPanelId
                 }-button-logout"> <div> ${ApplinksPanelOptionsGraphicUtils.logoutIcon} Logout </div> </div>
                 </div>
             </div>
-        </div> 
+        </div>
          <button style="background-color: transparent" popovertarget="${
              this.#applinksPanelId
          }-popover" popovertargetaction="toggle">
         <div id="${this.#applinksPanelId}-main-user-button" aria-haspopup="true" >
-            
-            <div id="${this.#applinksPanelId}-unloged-user"  
-              class="${this.#applinksPanelId}-main-icon active" style="display: flex"> 
+
+            <div id="${this.#applinksPanelId}-unloged-user"
+              class="${this.#applinksPanelId}-main-icon active" style="display: flex">
               ${ApplinksPanelOptionsGraphicUtils.userIcon}
             </div>
-           
+
             <div id="${this.#applinksPanelId}-cloud-update"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
               ${ApplinksPanelOptionsGraphicUtils.cloudUpdateIcon}
@@ -535,7 +542,7 @@ export class ApplinksPanel {
               <div id="${this.#applinksPanelId}-cloud-complete"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
               ${ApplinksPanelOptionsGraphicUtils.cloudCompleteIcon}
-            </div> 
+            </div>
               <div id="${this.#applinksPanelId}-cloud-error"  class="${this.#applinksPanelId}-main-icon"
             style="display: none">
               ${ApplinksPanelOptionsGraphicUtils.cloudErrorIcon}
@@ -544,14 +551,14 @@ export class ApplinksPanel {
             style="display: none">
               ${userIcon}
             </div>
-        
+
         </div>
           </button>
-          <div id="${this.#applinksPanelId}-message-info" class="${this.#applinksPanelId}-message-info"> 
+          <div id="${this.#applinksPanelId}-message-info" class="${this.#applinksPanelId}-message-info">
          <div class="message-text" id="${
              this.#applinksPanelId
          }-message-content"> You're not connected. Please login </div>
-           <div class="close-container"> 
+           <div class="close-container">
              <div role="button" class="close-container-button" id="${this.#applinksPanelId}-message-close">
 ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
 
@@ -577,11 +584,12 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
                 this.actionCallBack('login');
             }
         });
-
+        // @ts-ignore
         document.querySelector(`#${this.#applinksPanelId}-popover-close`).addEventListener('click', () => {
             // @ts-ignore
             popover.hidePopover();
         });
+        // @ts-ignore
         document.querySelector(`#${this.#applinksPanelId}-message-close`).addEventListener('click', (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
@@ -590,6 +598,7 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
         });
 
         ['account', 'help', 'logout'].forEach((id) => {
+            // @ts-ignore
             document.querySelector(`#${this.#applinksPanelId}-button-${id}`).addEventListener('click', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
@@ -728,6 +737,7 @@ export class APPLinkUtils {
      * @return { Promise<{ body: any; status: number; headers: Headers; }>}
      */
     static async PostData(url = '', data = {}, token) {
+        /**@type {Record<string,string>} */
         const headers = {
             'Content-Type': 'application/json',
         };
@@ -756,6 +766,7 @@ export class APPLinkUtils {
      */
     static async GetData(url = '', token) {
         try {
+            /**@type {Record<string,string>} */
             const headers /** @type {HeadersInit | any} */ = {
                 'Content-Type': 'application/json',
             };
@@ -778,8 +789,8 @@ export class APPLinkUtils {
                 status: response.status,
                 headers: response.headers,
             };
-        } catch (err) {
-            throw new Error('cannot get data' + err.toString());
+        } catch (err /** @type {Error} */) {
+            throw new Error('cannot get data' + err?.toString());
         }
     }
 
@@ -791,6 +802,7 @@ export class APPLinkUtils {
      * @return { Promise<{ body: any; status: number; headers: Headers; }>}
      */
     static async RequestTokenRefresh(url = '', refreshToken, token) {
+        /**@type {Record<string,string>} */
         const headers = {
             'Content-Type': 'application/json',
         };
@@ -828,7 +840,7 @@ export class APPLinkUtils {
             fullName: userData.FullName,
             id: userData.UID,
             token: TokenKey,
-            refreshToken: refreshToken,
+            refreshToken: refreshToken || '',
         };
     }
 
@@ -877,15 +889,18 @@ export class APPLinksClient {
 
     /** @type {ApplinksClientOptions  } */
     #options;
+    /** @type { WindowProxy | null} */
     #newLoginWindowRef = null;
     /** @type {ApplinksPanel | false}     */
     #usePanel = false;
     /** @type {string} */ #appId;
     #util = APPLinkUtils;
+
     /** @type {UserData | null} */
-    #UserData;
+    #UserData = null;
 
     #debounceTime = 5000;
+    /** @type { any | null} */
     #lastSavedRecordTime = null;
 
     /**
@@ -955,6 +970,10 @@ export class APPLinksClient {
             : null;
     }
 
+    /**
+     *
+     * @return {Promise< RecordData>}
+     */
     async loadSavedRecords() {
         if (!this.#validateUserData(this.#UserData)) {
             this.#emitAction({
@@ -974,7 +993,7 @@ export class APPLinksClient {
             new URLSearchParams({
                 appId: this.#appId || '',
             });
-        const { body, status, headers } = await this.#util.GetData(url, this.#UserData?.token);
+        const { body, status, headers } = await this.#util.GetData(url, this.#UserData?.token || '');
 
         if (status === 440) {
             if ((await this.#requestTokenRefresh()) === APPLinkUtils.Success) {
@@ -1012,6 +1031,7 @@ export class APPLinksClient {
 
     /**
      * @param {Record<string, any>} dataToSave
+     * @return {Promise<RecordData>}
      */
     async savedRecord(dataToSave) {
         if (!this.#validateUserData(this.#UserData)) {
@@ -1033,7 +1053,7 @@ export class APPLinksClient {
             new URLSearchParams({
                 appId: this.#appId || '',
             });
-        const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData.token);
+        const { body, headers, status } = await this.#util.PostData(url, dataToSave, this.#UserData?.token || '');
         if (status === 440) {
             if ((await this.#requestTokenRefresh()) === APPLinkUtils.Success) {
                 return this.savedRecord(dataToSave);
@@ -1079,8 +1099,13 @@ export class APPLinksClient {
             `width=${isMobile ? screenWidth : '500'},height=${isMobile ? screenHeight : '700'}`
         );
         this.#newLoginWindowRef = newLoginWindow;
+        if (!newLoginWindow) {
+            throw new Error('cannot open login window');
+        }
         const doc = newLoginWindow.document;
+
         const viewPortTag = doc.createElement('meta');
+
         viewPortTag.id = 'viewport';
         viewPortTag.name = 'viewport';
         viewPortTag.content = 'width=device-width; initial-scale=0.8;' + ' maximum-scale=1.0; user-scalable=0;';
@@ -1126,7 +1151,7 @@ export class APPLinksClient {
         const { status } = await this.#util.PostData(
             url,
             { refreshToken: this.#UserData?.refreshToken },
-            this.#UserData?.token
+            this.#UserData?.token || ''
         );
 
         if (status !== 200) {
@@ -1154,8 +1179,11 @@ export class APPLinksClient {
     #setUpPanel = (/** @type {{ useClientPanel: any; panelOptions: ApplinksPanelOptions | undefined  }} */ options) => {
         if (options.useClientPanel) {
             this.#usePanel = new ApplinksPanel(options.panelOptions);
-            this.#usePanel.actionCallBack = (/** @type {"login" | "logout"} */ action) =>
-                this.#applinksClientPanelAction(action);
+            // @ts-ignore
+            this.#usePanel.actionCallBack = // @ts-ignore
+                (/** @type {"login" | "logout"} */ action) => {
+                    this.#applinksClientPanelAction(action).then();
+                };
         }
     };
 
@@ -1203,6 +1231,7 @@ export class APPLinksClient {
         if (!this.#usePanel) {
             return;
         }
+        // @ts-ignore
         this.#usePanel.setStatus(status, this.#UserData);
     }
 
@@ -1217,7 +1246,7 @@ export class APPLinksClient {
         }
     };
 
-    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; }} */ userData) =>
+    #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; } | null} */ userData) =>
         userData?.fullName && userData.id && userData.username && userData.token;
 
     #saveUserDataToLocalStorage() {
@@ -1252,7 +1281,9 @@ export class APPLinksClient {
             this.#UserData?.token || ''
         );
         if (status === 200 && body.token) {
+            // @ts-ignore
             this.#UserData.token = body.token;
+            // @ts-ignore
             this.#UserData.refreshToken = body.refreshToken;
 
             this.#saveUserDataToLocalStorage();
