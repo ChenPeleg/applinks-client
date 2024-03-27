@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "node ./utils/testing/index.js",
+    "release": "git push --follow-tags origin",
     "build": "node ./bundler/bundler.js",
     "lint": "eslint --fix js/*.js",
     "format": "prettier --write ."
