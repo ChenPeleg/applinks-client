@@ -24,6 +24,7 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
               --generate-notes
+          
 #          upload_url: ${{ steps.create_release.outputs.upload_url }}
 #          asset_path: ./src/client.js
 #          asset_name: client.js
