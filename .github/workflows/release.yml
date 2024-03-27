@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - v*
-    branches:
-      - main
 
 permissions:
   contents: write
@@ -15,6 +13,12 @@ jobs:
     name: Release pushed tag
     runs-on: ubuntu-22.04
     steps:
+      - name: Check if on main branch
+        run: |
+          if [ "${GITHUB_REF##*/}" != "main" ]; then
+            echo "Not on main branch, exiting..."
+            exit 0
+          fi
       - name: Create release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -24,7 +28,7 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
               --generate-notes
-          
+
 #          upload_url: ${{ steps.create_release.outputs.upload_url }}
 #          asset_path: ./src/client.js
 #          asset_name: client.js
