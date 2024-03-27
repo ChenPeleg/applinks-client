@@ -1,0 +1,30 @@
+name: Create release
+
+on:
+  push:
+    tags:
+      - v*
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Release pushed tag
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref_name }}
+        run: |
+          gh release create "$tag" \
+              --repo="$GITHUB_REPOSITORY" \
+              --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
+              --generate-notes
+#          upload_url: ${{ steps.create_release.outputs.upload_url }}
+#          asset_path: ./src/client.js
+#          asset_name: client.js
+#          asset_content_type: text/javascript
