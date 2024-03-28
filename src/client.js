@@ -278,7 +278,7 @@ body [popover] {
 }
 
 /**
- * @typedef  {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"}  AppLinkPanelStatusDisplay
+ * @typedef  {'not-logged-in' | 'updating' | 'updateComplete' | 'error' | 'logged-in' | 'error-please-relogin'}  AppLinkPanelStatusDisplay
  */
 
 class ApplinksPanelOptions {
@@ -641,7 +641,7 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
  * @typedef ApplinksClientOptions
  * @property { boolean } useClientPanel
  * @property { boolean } useLocalStorage
- * @property { number } debaunceTime
+ * @property { number } debounceTime
  * @property { APPLinkUtils | any } appLinkUtils
  * @property { ApplinksPanelOptions | any } panelOptions
  */
@@ -910,7 +910,7 @@ export class APPLinksClient {
     constructor(
         appId,
         options = {
-            debaunceTime: 5000,
+            debounceTime: 5000,
             useClientPanel: false,
             useLocalStorage: true,
             appLinkUtils: APPLinkUtils,
@@ -920,8 +920,8 @@ export class APPLinksClient {
         this.#appId = appId;
         this.#options = options;
         this.#setUpPanel(options);
-        if (options.debaunceTime) {
-            this.#debounceTime = options.debaunceTime;
+        if (options.debounceTime) {
+            this.#debounceTime = options.debounceTime;
         }
 
         if (options.useLocalStorage) {
@@ -949,7 +949,7 @@ export class APPLinksClient {
             setUserData: (userData) => this.#setUserData(userData),
             tryToUpdateUserDataFromLocalStorage: () => this.#tryToUpdateUserDataFromLocalStorage(),
             requestTokenRefresh: () => this.#requestTokenRefresh(),
-            /** @type  {(action :  "login" | "logout" | "help" | "account"  ) => Promise<void>}  */
+            /** @type  {(action :  'login' | 'logout' | 'help' | 'account'  ) => Promise<void>}  */
             applinksClientPanelAction: (action) => this.#applinksClientPanelAction(action),
             handleAuthFailure: () => this.#handleAuthFailure(),
             saveUserDataToLocalStorage: () => this.#saveUserDataToLocalStorage(),
@@ -1181,13 +1181,13 @@ export class APPLinksClient {
             this.#usePanel = new ApplinksPanel(options.panelOptions);
             // @ts-ignore
             this.#usePanel.actionCallBack = // @ts-ignore
-                (/** @type {"login" | "logout"} */ action) => {
+                (/** @type {'login' | 'logout'} */ action) => {
                     this.#applinksClientPanelAction(action).then();
                 };
         }
     };
 
-    #applinksClientPanelAction = async (/** @type {"login" | "logout" | "help" | "account" } */ action) => {
+    #applinksClientPanelAction = async (/** @type {'login' | 'logout' | 'help' | 'account' } */ action) => {
         switch (action) {
             case 'login':
                 try {
@@ -1225,7 +1225,7 @@ export class APPLinksClient {
 
     /**
      *
-     * @param {"not-logged-in" | "updating" | "updateComplete" | "error" | "logged-in" | "error-please-relogin"} status
+     * @param {'not-logged-in' | 'updating' | 'updateComplete' | 'error' | 'logged-in' | 'error-please-relogin'} status
      */
     #updatePanelStatus(status) {
         if (!this.#usePanel) {
