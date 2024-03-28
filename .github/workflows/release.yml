@@ -28,8 +28,7 @@ jobs:
               --repo="$GITHUB_REPOSITORY" \
               --title="${GITHUB_REPOSITORY#*/} ${tag#v}" \
               --generate-notes
-
-#          upload_url: ${{ steps.create_release.outputs.upload_url }}
-#          asset_path: ./src/client.js
-#          asset_name: client.js
-#          asset_content_type: text/javascript
+      - name: Add artifacts to the release
+        run: |
+          gh release upload "$tag" ./src/client.js --clobber
+#
