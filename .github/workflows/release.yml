@@ -35,7 +35,7 @@ jobs:
         env:
           tag: ${{ github.ref_name }}
         run: |
-          echo "// $tag \n" > > temp.txt
+          echo "// $tag \n" >> temp.txt
           cat src/client.js >> temp.txt
           mv temp.txt applinksClient.js
       - name: Add artifacts to the release 2
