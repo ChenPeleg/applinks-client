@@ -31,13 +31,17 @@ jobs:
               --generate-notes
       - name: check folder structure
         run: |
-      - name: print src/client.js
+      - name: concatenate version number to file
+        env:
+          tag: ${{ github.ref_name }}
         run: |
-          cat src/client.js
+          echo "// $tag \n" > > temp.txt
+          cat src/client.js >> temp.txt
+          mv temp.txt applinksClient.js
       - name: Add artifacts to the release 2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref_name }}
         run: |
-          gh release upload "$tag" src/client.js --clobber
-#
+          gh release upload "$tag" applinksClient.js --clobber
+
