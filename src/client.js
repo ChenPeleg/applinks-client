@@ -872,6 +872,7 @@ export class APPLinksClient {
     };
 
     static AuthError = APPLinkUtils.AuthError;
+    static PostMessageIsOfDifferentOrigin = 'PostMessageIsOfDifferentOrigin';
     static ApplinksClientEvents = {
         UserLoggedIn: 'UserLoggedIn',
         UserLoggedOut: 'UserLoggedOut',
@@ -969,6 +970,20 @@ export class APPLinksClient {
               }
             : null;
     }
+
+    /**
+     * @param {UserData} userData
+     */
+    #hideAuthData = (userData) => {
+        if (!userData || !userData.id) {
+            return userData;
+        }
+        return {
+            username: userData.username,
+            fullName: userData.fullName,
+            id: userData.id,
+        };
+    };
 
     /**
      *
@@ -1088,10 +1103,11 @@ export class APPLinksClient {
 
         const isMobile = screenWidth < 500;
         const cacheBreaker = Math.random().toString(36).substring(7);
+        const appIdForUrl = this.#appId ? `&appId=${this.#appId}` : '';
 
         const html = `<div id="iframe-container" style="width: 100%; background-color: #ffffff; overflow: hidden;height: 100%; min-height: 60vh; max-height: 95vh;  display: flex; flex-direction: row;justify-content: center">
             <iframe allowtransparency="true"  style="width: 100% ; height: 100% ;border:none; color: black; background: #FFFFFF;" id="login-i-frame" src="${
-                this.#util.htmlLoginUrl + '?cacheBreaker=' + cacheBreaker
+                this.#util.htmlLoginUrl + '?cacheBreaker=' + cacheBreaker + appIdForUrl
             }"></iframe> </div>`;
         const newLoginWindow = window.open(
             '',
@@ -1118,7 +1134,7 @@ export class APPLinksClient {
                 (msg) => {
                     const data = msg.data;
                     if (typeof data !== 'object') {
-                        return reject('data is not an object');
+                        return reject(APPLinksClient.PostMessageIsOfDifferentOrigin);
                     }
                     const { userData, appData, appSaveData, token, clientConfig, refreshToken } = data;
                     this.#util.setConfigs(clientConfig);
@@ -1131,7 +1147,17 @@ export class APPLinksClient {
                         this.#newLoginWindowRef = null;
                     }
 
-                    this.#loginActions();
+                    this.#emitAction({
+                        type: APPLinksClient.ApplinksClientEvents.UserLoggedIn,
+                        data: {
+                            userData: this.#hideAuthData(this.#UserData),
+                            recordData: appSaveData ? this.#util.serializeRecordData(appSaveData, appData) : undefined,
+                        },
+                    });
+                    this.#updatePanelStatus('logged-in');
+                    if (this.#options.useLocalStorage) {
+                        this.#saveUserDataToLocalStorage();
+                    }
 
                     resolve({
                         userData: this.#UserData,
@@ -1194,6 +1220,10 @@ export class APPLinksClient {
                     const { userData } = /** @type { UserData }*/ await this.LoginThroughAppLinks();
                     localStorage.setItem('user-data', JSON.stringify(userData));
                 } catch (err) {
+                    if (err === APPLinksClient.PostMessageIsOfDifferentOrigin) {
+                        // This means the post message is not from the same origin (i.e. the login window)
+                        return;
+                    }
                     this.#clientActionCallBack({
                         type: APPLinksClient.ApplinksClientEvents.UserLoginFailed,
                         data: err,
@@ -1234,17 +1264,6 @@ export class APPLinksClient {
         // @ts-ignore
         this.#usePanel.setStatus(status, this.#UserData);
     }
-
-    #loginActions = () => {
-        this.#emitAction({
-            type: APPLinksClient.ApplinksClientEvents.UserLoggedIn,
-            data: this.#UserData,
-        });
-        this.#updatePanelStatus('logged-in');
-        if (this.#options.useLocalStorage) {
-            this.#saveUserDataToLocalStorage();
-        }
-    };
 
     #validateUserData = (/** @type {{ fullName: any; id: any; username: any; token: any; } | null} */ userData) =>
         userData?.fullName && userData.id && userData.username && userData.token;
