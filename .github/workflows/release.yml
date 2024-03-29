@@ -34,8 +34,8 @@ jobs:
       - name: concatenate version number to file
         env:
           tag: ${{ github.ref_name }}
+        #         echo "// $tag \n" >> temp.txt
         run: |
-          echo "// $tag \n" >> temp.txt
           cat src/client.js >> temp.txt
           mv temp.txt applinksClient.js
       - name: Add artifacts to the release 2
