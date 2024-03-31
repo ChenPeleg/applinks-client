@@ -623,7 +623,7 @@ ${ApplinksPanelOptionsGraphicUtils.xIcon}</div>
 
 /**
  * @typedef RecordData
- * @property { string } app_data
+ * @property { any } app_data
  * @property { string } app_name
  * @property { string } app_id
  * @property  { string } message
