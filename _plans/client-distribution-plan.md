@@ -33,7 +33,8 @@ come from file paths in search results, not from their contents.
 4. **Every app ships the panel**, including its icons and CSS, even if it sets `useClientPanel: false`.
 5. **The repo is not set up to be consumed any other way.** `package.json` has no `version`, `exports` or
    `files`; `npm run build` points at `bundler/bundler.js`, which does not exist; `npm run lint` targets
-   `js/*.js`, which does not exist; `README.md` is empty; there are no tags in the repo at the moment.
+   `js/*.js`, which does not exist; `README.md` is empty. The newest release, `v0.18`, predates the last three
+   commits on `main`, so the published file is already behind the source.
 
 ## 3. Options
 
