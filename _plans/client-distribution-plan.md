@@ -50,6 +50,54 @@ file at release time and expose it as `APPLinksClient.version`.
 | Against | The copy is still editable in place, so drift is discouraged but not prevented. Still one commit and one redeploy per app per fix. Types still need a second downloaded file. Nothing tells you an app is behind. |
 | Effort | About an hour here, plus ten minutes per app. |
 
+#### How the download works
+
+GitHub gives every release asset a stable URL, so no API or token is needed while this repo is public:
+
+- Pinned: `https://github.com/ChenPeleg/applinks-client/releases/download/v0.18/applinksClient.js`
+- Newest: `https://github.com/ChenPeleg/applinks-client/releases/latest/download/applinksClient.js`
+
+A script for each app, with no dependencies (Node 18+). It has not been run yet:
+
+```js
+// scripts/update-applinks.mjs
+import { writeFile } from 'node:fs/promises';
+
+const version = process.argv[2] ?? 'latest'; // e.g. v0.18
+const target = 'src/provider/appLinksClient.js';
+const base = 'https://github.com/ChenPeleg/applinks-client/releases';
+const url =
+    version === 'latest'
+        ? `${base}/latest/download/applinksClient.js`
+        : `${base}/download/${version}/applinksClient.js`;
+
+const res = await fetch(url);
+if (!res.ok) throw new Error(`Download failed: ${res.status} ${url}`);
+const code = await res.text();
+await writeFile(target, `// applinks-client ${version} - generated, do not edit\n${code}`);
+console.log(`Updated ${target} to ${version}`);
+```
+
+In the app's `package.json`: `"update-applinks": "node scripts/update-applinks.mjs"`, then
+`npm run update-applinks -- v0.18`.
+
+#### Things to settle before using it
+
+1. **Cut a new release first.** `v0.18` does not include the last three commits on `main` ("remove the tag
+   number from version", "changes from 86x0", "from assembly"). Running the script today would overwrite
+   those fixes in the apps that have them.
+2. **Stamp the version into the file.** The asset is a plain copy of `src/client.js`, so with `latest` there
+   is no way to tell what an app has. Have `release.yml` prepend the tag (the commented-out line there was
+   meant to) and expose it as `APPLinksClient.version`. Prefer pinned tags over `latest` in the apps.
+3. **Upload the types too.** Add a generated `applinksClient.d.ts` to the release and have the script fetch
+   both files, so Assembly-x86 can drop its hand-written types.
+4. **Committed or generated?** Either commit the downloaded file (builds work offline, but the copy can be
+   edited), or git-ignore it and run the script from `prebuild` (no editable copy, but every build, including
+   the portal deploy, needs GitHub to be reachable).
+
+Verification so far: from the planning sandbox, GitHub resolved the `latest` URL to the asset without a login,
+but the final download returned 401, most likely from that environment's proxy. Confirm it once locally.
+
 ### Option B — Make it a real package and install it with npm (recommended)
 
 Turn this repo into an installable package. Apps declare it in `package.json` and import it:
@@ -76,6 +124,42 @@ I checked that type generation works: `tsc --allowJs --declaration --emitDeclara
 produces a 326-line `client.d.ts` with `APPLinksClient`, `ApplinksPanel`, `UserData` and `RecordData`. It also
 reports eight JSDoc type errors at lines 1198, 1246 and 1333 (`APPLinksClient.ApplinksClientEvents[...]` used
 as a type namespace). Those need fixing as part of this option.
+
+#### Can the package be private?
+
+Yes, but it buys very little here and costs a token in every place that installs it.
+
+**What private does not do.** The client runs in the browser, so its full source is delivered to every visitor
+of every app. Making the package private hides the registry listing, not the code. This repo is also public
+today, and the release asset is downloadable without a login.
+
+**The three ways to do it:**
+
+| Route | Cost | Setup | Ongoing friction |
+|---|---|---|---|
+| GitHub Packages, private | Free within the free-plan storage and transfer allowance, which a 51 KB package will not approach | Rename to `@chenpeleg/applinks-client`, add `publishConfig`, publish from `release.yml` with the built-in `GITHUB_TOKEN` and `packages: write` | Every app needs an `.npmrc` mapping the scope to `npm.pkg.github.com`. Every machine needs a personal access token with `read:packages`, and those expire. The portal needs access too (below). |
+| npmjs.com, private | Needs a paid npm plan | Scoped name, `npm publish --access restricted`, publish token in this repo's secrets | An `NPM_TOKEN` and `.npmrc` on every machine and in the portal's secrets. |
+| Private git repo | Free | Make this repo private; apps install `github:ChenPeleg/applinks-client#v1.2.0` | Needs an SSH key or token wherever `npm ci` runs. No semver ranges. The release-download script in Option A stops working without a token as well. |
+
+**What changes in the portal.** `build-for-deploy` runs `npm ci` inside the cloned app, so the install happens
+under `app-links-portal`'s workflow. For GitHub Packages that means: grant the `app-links-portal` repository
+read access in the package's "Manage Actions access" settings, add `permissions: packages: read` to both
+deploy workflows, and pass `NODE_AUTH_TOKEN` into the `npm ci` step of the composite action.
+
+**Other costs.**
+
+- The free jsDelivr/unpkg copy disappears, so a no-build game cannot import the client by URL (Option C would
+  need its own hosting).
+- The portal clones app repos without credentials, so they are public. A public app that depends on a private
+  package cannot be installed or built by anyone else, and Dependabot needs a registry secret configured per
+  app repo before it can open update PRs.
+
+**How hard.** About one to two hours for the first setup on GitHub Packages (the publish workflow, one app's
+`.npmrc`, the portal permissions), then ten minutes per additional app. The steady cost is tokens: a new
+laptop, an expired token or a new CI job fails with a 401 or 404 on install until one is supplied.
+
+**Verdict.** Keep it public unless there is a specific reason to hide that the package exists. If it must be
+private, GitHub Packages is the cheapest route.
 
 ### Option C — Load the client from a URL at runtime
 
